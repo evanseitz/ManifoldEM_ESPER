@@ -225,6 +225,20 @@ if 1:
         plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
         plt.show()
         
+    if 0: #plot n-dimensional Euclidean distance from any given reference point
+        dists = []
+        ref = 0 #reference point
+        for i in range(0,m):
+            dn = 0
+            for n in range(1,399): #number of dimensions to consider
+                if sdiag[n] > 0: #only count eigenfunctions with non-zero eigenvalues
+                    dn += (sdiag[n]*U[:,n][ref] - sdiag[n]*U[:,n][i])**2
+            dists.append((dn)**(1/2.))
+        plt.scatter(np.linspace(1,400,400), dists)
+        plt.xlim(-1,m+1)
+        plt.ylim(min(dists),max(dists)) 
+        plt.show()
+        
         
         
     
