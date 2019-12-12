@@ -29,24 +29,25 @@ m = 400 #number of images
 
 #####################
 # generate (if 1) or load (if 0) distances:
-if 0:
+if 1:
     stack = mrcfile.open(os.path.join(pyDir, '9_GenSNR_pyRelion/Hsp2D_noNorm.mrcs'))
     states = range(0,m)
     RMSD = np.ndarray(shape=(m,m), dtype=float)
     
-    if 0: #manual distance calculation
+    if 1: #manual distance calculation
         p = 2 #Minkowski distance metric: p1=Manhattan, p2=Euclidean, ..., pInf=Chebyshev
         for i in states:
             for j in states:
-                RMSD[i,j] = (np.sum(np.abs((stack.data[i]-stack.data[j]))**2))**(1./p) / stack.data[i].size #kernel
+                #RMSD[i,j] = (np.sum(np.abs((stack.data[i]-stack.data[j]))**2))**(1./p) / stack.data[i].size #kernel
+                RMSD[i,j] = (np.sum(np.abs((stack.data[i]-stack.data[j]))**p) / stack.data[i].size)**(1./p) #equivalent of 2D-RMSD
         
     else: #use scipy library for distance metric
         stack2 = np.ndarray(shape=(m,250**2), dtype=float) #if boxSize=250
         for i in states:
             stack2[i] = stack.data[i].flatten()
         
-        #RMSD = cdist(stack2, stack2, 'euclidean')
-        RMSD = cdist(stack2, stack2, 'sqeuclidean')
+        RMSD = cdist(stack2, stack2, 'euclidean')
+        #RMSD = cdist(stack2, stack2, 'sqeuclidean')
         #RMSD = cdist(stack2, stack2, 'minkowski', p=2.)
         #RMSD = cdist(stack2, stack2, 'cityblock')
         #RMSD = cdist(stack2, stack2, 'cosine')
@@ -59,12 +60,12 @@ if 0:
         np.save('Dist_%s.npy' % (projName), RMSD)
     
 else:
-    if 0: #RMSD from 2D images of 3D structures:
-        RMSD = np.load('Dist_%s.npy' % (projName)) #best eps=.5<->10000?
+    if 1: #RMSD from 2D images of 3D structures:
+        RMSD = np.load('Dist_%s.npy' % (projName)) #best eps=0.1?
     else: #RMSD from 3D structures:
         RMSD = np.load('Dist_3D_RMSD.npy') #best eps=.0001
 
-if 1:
+if 0:
     imshow(RMSD, cmap='jet', origin='lower')
     plt.title('Distances', fontsize=20)
     plt.colorbar()
@@ -78,7 +79,7 @@ if 1: #distances of state_01_01 to all others
 #####################
 # Ferguson to find optimal epsilon:
 
-if 1:
+if 0:
     logEps = np.arange(-30,30.2,0.2)
     a0 = 1*(np.random.rand(4,1)-.5)
     popt, logSumWij, resnorm = fergusonE.op(RMSD,logEps,a0)
@@ -94,20 +95,20 @@ if 1:
         plt.scatter(logEps, logSumWij, s=1, c='#1f77b4', edgecolor='#1f77b4', zorder=.1)
         plt.plot(logEps, fun(logEps, popt[0], popt[1], popt[2],popt[3]), c='red', linewidth=.5, zorder=.2)
         plt.title('Gaussian Kernel Bandwidth',fontsize=14)
-        plt.xlabel(r'$\mathrm{ln \ \epsilon}$', fontsize=14)
+        plt.xlabel(r'$\mathrm{ln \ \epsilon}$', fontsize=16)
         plt.ylabel(r'$\mathrm{ln \ \sum_{i,j} \ A_{i,j}}$', fontsize=18, rotation=90) 
         plt.show()
 
 ###########################
 # generate optimal kernel:
-eps = .0001#.05#10000 #.5 #change to eps0 for "optimal" fit found above
+eps = .001#.05#10000 #.5 #change to eps0 for "optimal" fit found above
 A = np.exp(-(RMSD**2 / 2*eps)) #distance matrix
 alpha = 1 #currently unassigned (always alpha=1)
     # alpha = 1.0: Laplace-Beltrami operator
     # alpha = 0.5: Fokker-Planck diffusion
     # alpha = 0.0: graph Laplacian normalization
 
-if 1:
+if 0:
     imshow(A, cmap='jet', origin='lower')
     plt.title(r'Gaussian Kernel, $\mathit{\epsilon}$=%s' % eps, fontsize=20)
     plt.colorbar()
@@ -120,6 +121,10 @@ if 1:
         plt.scatter(np.linspace(1,400,400),rowSums)
         plt.xlim(1,400)
         plt.ylim(np.amin(rowSums),np.amax(rowSums))
+        plt.show()
+        
+    if 1: #kernel of state_01_01 to all others
+        plt.scatter(np.linspace(1,400,400), A[0,:])
         plt.show()
         
 ###########################################
@@ -178,7 +183,7 @@ D,U,S,invS = tidyUp(D,U)
 V = np.matmul(M.T,np.matmul(U,invS))
 sdiag = np.diag(S)
 
-if 1:
+if 0:
     if 0:
         print('U:', U)
         print('S:', sdiag)
@@ -207,7 +212,6 @@ if 1:
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.colorbar()
-        plt.tight_layout()
         plt.xlim(np.amin(U[:,1])*sdiag[1], np.amax(U[:,1])*sdiag[1])
         plt.ylim(np.amin(U[:,2])*sdiag[1], np.amax(U[:,2])*sdiag[1])
         plt.show()
@@ -225,19 +229,58 @@ if 1:
         plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
         plt.show()
         
-    if 0: #plot n-dimensional Euclidean distance from any given reference point
-        dists = []
-        ref = 0 #reference point
-        for i in range(0,m):
-            dn = 0
-            for n in range(1,399): #number of dimensions to consider
-                if sdiag[n] > 0: #only count eigenfunctions with non-zero eigenvalues
-                    dn += (sdiag[n]*U[:,n][ref] - sdiag[n]*U[:,n][i])**2
-            dists.append((dn)**(1/2.))
-        plt.scatter(np.linspace(1,400,400), dists)
-        plt.xlim(-1,m+1)
-        plt.ylim(min(dists),max(dists)) 
-        plt.show()
+if 0: #save diffusion map
+    np.save('Dist_%s_DM.npy' % (projName), U)
+    
+if 1: #plot n-dimensional Euclidean distance from any given reference point
+    dists = []
+    ref = 0 #reference point
+    for i in range(0,m):
+        dn = 0
+        for n in range(1,399): #number of dimensions to consider
+            if sdiag[n] > 0: #only count eigenfunctions with non-zero eigenvalues
+                dn += (sdiag[n]*U[:,n][ref] - sdiag[n]*U[:,n][i])**2
+        dists.append((dn)**(1/2.))
+    plt.scatter(np.linspace(1,400,400), dists)
+    plt.xlim(-1,m+1)
+    plt.ylim(min(dists),max(dists)) 
+    plt.show()
+    
+if 1: #plot geodesic distance between neighboring states
+    dists = []
+    ref = 0 #reference point
+    for i in [1]:
+        dn = 0
+        for n in range(1,399): #number of dimensions to consider
+            if sdiag[n] > 0: #only count eigenfunctions with non-zero eigenvalues
+                dn += (sdiag[n]*U[:,n][ref] - sdiag[n]*U[:,n][i])**2
+        dists.append((dn)**(1/2.))
+    print(dists)
+    #plt.scatter(np.linspace(1,400,400), dists)
+    #plt.xlim(-1,m+1)
+    #plt.ylim(min(dists),max(dists)) 
+    #plt.show()
+    
+if 0: #temporary, for plotting only (presentation); 3D RMSD
+    e = [.0001, .001, .01, .1, 1, 10, 100, 1000]
+    d = [1.103e-5, .0001046, .00082, .008035, .0928, 1.02, 1.414213557, 1.41421356]
+    plt.scatter(np.log(e),d)
+    plt.axhline(y=0, color='gray', alpha=.5, linestyle='--', linewidth=1)
+    plt.title(r'$n$-dim geodesic distance between neighboring states (0, 1)',fontsize=14)
+    plt.xlabel(r'$\mathrm{ln \ \epsilon}$', fontsize=18)
+    plt.ylabel('Geodesic distance', fontsize=14, rotation=90) 
+    plt.show()
+
+if 1: #temporary, for plotting only (presentation); 2D RMSD
+    e = [.001, .01, .1, 1, 10, 100, 1000]
+    d = [1.867e-5, .0001889, .002122, .03277, .555, 1.4138, 1]
+    plt.scatter(np.log(e),d)
+    plt.axhline(y=0, color='gray', alpha=.5, linestyle='--', linewidth=1)
+    plt.axvline(x=np.log(10), color='red', alpha=.5, linestyle='-', linewidth=1)
+    plt.title(r'$n$-dim geodesic distance between neighboring states (0, 1)',fontsize=14)
+    plt.xlabel(r'$\mathrm{ln \ \epsilon}$', fontsize=18)
+    plt.ylabel('Geodesic distance', fontsize=14, rotation=90) 
+    plt.show()    
         
         
         
