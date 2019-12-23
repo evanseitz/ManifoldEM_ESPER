@@ -102,8 +102,8 @@ if 0:
 ###########################
 # generate optimal kernel:
 eps = .001#.05#10000 #.5 #change to eps0 for "optimal" fit found above
-A = np.exp(-(RMSD**2 / 2*eps)) #distance matrix
-alpha = 1 #currently unassigned (always alpha=1)
+A = np.exp(-(RMSD**2 / 2*eps)) #Gaussian kernel
+alpha = 1 #currently unassigned (default alpha=1)
     # alpha = 1.0: Laplace-Beltrami operator
     # alpha = 0.5: Fokker-Planck diffusion
     # alpha = 0.0: graph Laplacian normalization
