@@ -29,7 +29,7 @@ m = 400 #number of images
 
 #####################
 # generate (if 1) or load (if 0) distances:
-if 1:
+if 0:
     stack = mrcfile.open(os.path.join(pyDir, '9_GenSNR_pyRelion/Hsp2D_noNorm.mrcs'))
     states = range(0,m)
     RMSD = np.ndarray(shape=(m,m), dtype=float)
@@ -60,7 +60,7 @@ if 1:
         np.save('Dist_%s.npy' % (projName), RMSD)
     
 else:
-    if 1: #RMSD from 2D images of 3D structures:
+    if 0: #RMSD from 2D images of 3D structures:
         RMSD = np.load('Dist_%s.npy' % (projName)) #best eps=0.1?
     else: #RMSD from 3D structures:
         RMSD = np.load('Dist_3D_RMSD.npy') #best eps=.0001
