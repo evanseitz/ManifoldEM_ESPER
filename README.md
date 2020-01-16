@@ -1,7 +1,7 @@
 # README
 ## Cryo-EM Synthethic Analysis
 
-This repository contains the software implementation for our paper **Heuristic Analysis of COnformational Reconstruction Techniques Using Simulated Cryo-EM Ensembles** (Seitz, Acosta-Reyes, ..., Frank): https://www.biorxiv.org/???. It contains tools to apply the discussed methods to continuum models.
+This repository contains the software implementation for our paper **Heuristic Analysis of Conformational Reconstruction Techniques Using Simulated Cryo-EM Ensembles** (Seitz, Acosta-Reyes, ..., Frank): https://www.biorxiv.org/???. It contains tools to apply the discussed methods to continuum models.
 
 ### Instructions:
 
