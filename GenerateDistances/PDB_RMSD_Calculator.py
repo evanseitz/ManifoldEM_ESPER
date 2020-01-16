@@ -4,11 +4,9 @@ from pymol import cmd
 import numpy as np
 
 # =============================================================================
-# PyMOL RMSD Calculator (run via 'pymol RMSD_Calculator.py') 
+# PyMOL RMSD Calculator (run via 'pymol PDB_RMSD_Calculator.py') 
 # Authors:    E. Seitz @ Columbia University - Frank Lab - 2019 
 #             F. Acosta-Reyes @ Columbia University - Frank Lab - 2019
-#
-# Run via: 'pymol PDB_RMSD_Calculator.py'
 # =============================================================================
 
 def calc_rmsd(sel1, sel2):
