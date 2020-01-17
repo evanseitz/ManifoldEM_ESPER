@@ -94,7 +94,7 @@ if 0: #generate distances for image stack of projections for a given projection 
 else: #or load in previously-generated distance matrix
     RMSD = np.load('Dist_2DoF_3dRMSD.npy') #distances from PDB files (2 degrees of freedom)
     #RMSD = np.load('Dist_3DoF_3dRMSD.npy') #distances from PDB files (3 degrees of freedom)
-    #RMSD = np.load('Dist_3DoF_Volumes.npy') #distances from MRC files
+    #RMSD = np.load('Dist_2DoF_Volumes.npy') #distances from MRC files
     #RMSD = np.load('Dist_2DoF_PD0.npy') #distances from projections of MRC files
     
     m = np.shape(RMSD)[0]#number of states to consider from distance matrix; m <= len(dataPaths); e.g., m=20 for 1D motion
@@ -402,8 +402,8 @@ if 1: #plot n-dimensional Euclidean distance from any given reference point
                 dn += (sdiag[n]*U[:,n][ref] - sdiag[n]*U[:,n][i])**2
         dists.append((dn)**(1/2.))
     
-    fig = plt.figure()
-
+    fig = plt.figure() #the following two plots should have the same shape if the correct eps was chosen
+    
     plt.subplot(1, 2, 1)
     plt.title(r'Distance matrix distance from state_1 to all others', wrap=1, fontsize=8)
     plt.scatter(np.linspace(1,m,m), RMSD[0,:])
@@ -416,7 +416,6 @@ if 1: #plot n-dimensional Euclidean distance from any given reference point
     plt.xlim(-1,m+1)
     plt.ylim(min(dists)*1.1,max(dists)*1.1)
     
-    #plt.tight_layout()
     plt.show()
     
 if 1: #plot distances of state_1 to all others
