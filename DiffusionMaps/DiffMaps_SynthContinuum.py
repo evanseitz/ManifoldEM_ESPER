@@ -157,13 +157,13 @@ else:
 # generate optimal kernel:
 # =============================================================================
 
-A = np.exp(-(RMSD**2 / 2*eps)) #distance matrix
+A = np.exp(-(RMSD**2 / 2*eps)) #similarity matrix
 alpha = 1 #currently unassigned (always alpha=1)
     # alpha = 1.0: Laplace-Beltrami operator
     # alpha = 0.5: Fokker-Planck diffusion
     # alpha = 0.0: graph Laplacian normalization
 
-if 0: #plot Gaussian Kernel
+if 0: #plot similarity matrix, A
     imshow(A, cmap='jet', origin='lower')
     plt.title(r'Gaussian Kernel, $\mathit{\epsilon}$=%s' % eps, fontsize=20)
     plt.colorbar()
