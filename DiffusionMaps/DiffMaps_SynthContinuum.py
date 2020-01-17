@@ -110,7 +110,7 @@ if 1: #plot distance matrix
     plt.tight_layout()
     plt.show()
     
-if 0: #plot distances of state_01_01 to all others
+if 1: #plot distances of state_01_01 to all others
     plt.scatter(np.linspace(1,m,m), RMSD[0,:])
     plt.show()
 
@@ -157,13 +157,13 @@ else:
 # generate optimal kernel:
 # =============================================================================
 
-A = np.exp(-(RMSD**2 / 2*eps)) #similarity matrix
+A = np.exp(-(RMSD**2 / 2*eps)) #distance matrix
 alpha = 1 #currently unassigned (always alpha=1)
     # alpha = 1.0: Laplace-Beltrami operator
     # alpha = 0.5: Fokker-Planck diffusion
     # alpha = 0.0: graph Laplacian normalization
 
-if 0: #plot similarity matrix, A
+if 0: #plot Gaussian Kernel
     imshow(A, cmap='jet', origin='lower')
     plt.title(r'Gaussian Kernel, $\mathit{\epsilon}$=%s' % eps, fontsize=20)
     plt.colorbar()
@@ -250,11 +250,11 @@ if 0: #np.linalg.eigh() version
     d,U,S,invS = tidyUp(d,U)
     V = np.matmul(M.T,np.matmul(U,invS))
     sdiag = np.diag(S)
-    sdiag = sdiag**2 #eigenvalues given by s**2
+    sdiag = sdiag**(1/2.) #eigenvalues given by s**2
     
 else: #np.linalg.svd() version; computationally same result as above
     U, sdiag, vh = np.linalg.svd(Ms) #vh = U.T
-    sdiag = sdiag**2 #eigenvalues given by s**2
+    sdiag = sdiag**(1/2.) #eigenvalues given by s**2
     
 if 0: #orthogonality check
     print(np.sum(U[:,0]*U[:,0])) #should be 1
@@ -392,7 +392,7 @@ if 0: #save diffusion map to file
 # calculate diffusion map geodesics:
 # =============================================================================
     
-if 0: #plot n-dimensional Euclidean distance from any given reference point
+if 1: #plot n-dimensional Euclidean distance from any given reference point
     dists = []
     ref = 0 #reference point
     for i in range(0,m):
@@ -401,12 +401,28 @@ if 0: #plot n-dimensional Euclidean distance from any given reference point
             if sdiag[n] > 0: #only count eigenfunctions with non-zero eigenvalues
                 dn += (sdiag[n]*U[:,n][ref] - sdiag[n]*U[:,n][i])**2
         dists.append((dn)**(1/2.))
+    
+    fig = plt.figure()
+
+    plt.subplot(1, 2, 1)
+    plt.title(r'Distance matrix distance from state_1 to all others', wrap=1, fontsize=8)
+    plt.scatter(np.linspace(1,m,m), RMSD[0,:])
+    plt.xlim(-1,m+1)
+    plt.ylim(min(RMSD[0,:])*1.1,max(RMSD[0,:])*1.1)
+
+    plt.subplot(1, 2, 2) 
+    plt.title(r'n-dim DM distance from state_1 to all others, $\mathit{\epsilon}$=%s' % eps, wrap=1, fontsize=8)
     plt.scatter(np.linspace(1,m,m), dists)
     plt.xlim(-1,m+1)
-    plt.ylim(min(dists),max(dists)) 
+    plt.ylim(min(dists)*1.1,max(dists)*1.1)
+    
+    #plt.tight_layout()
     plt.show()
     
-if 0: #plot geodesic distance between neighboring states
+if 1: #plot distances of state_1 to all others
+    plt.show()
+    
+if 1: #plot geodesic distance between neighboring states
     dists = []
     ref = 0 #reference point
     for i in [1]:
