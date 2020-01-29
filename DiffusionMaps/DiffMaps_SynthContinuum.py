@@ -284,6 +284,10 @@ if 1: #plot 2d diffusion map
     v1 = 1 #eigenfunction to plot on first axis
     v2 = 2 #eigenfunction to plot on second axis
     plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2],c=U[:,v1]*sdiag[v1])
+    if 1: #annotate each point with its image index
+        enum = np.arange(1,m+1)
+        for i, txt in enumerate(enum):
+            plt.annotate(txt, (U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2]), fontsize=16, zorder=1, color='gray')
     plt.title(r'2D Embedding, $\mathit{\epsilon}$=%s' % eps)
     plt.xlabel(r'$\psi_1$')
     plt.ylabel(r'$\psi_2$')
@@ -373,7 +377,12 @@ if 1: #3d diffusion map
             idx += 1
         ax.plot(curve_x, curve_y)
 
-    ax.scatter(U[:,1]*sdiag[1], U[:,2]*sdiag[2], U[:,3]*sdiag[3],c=U[:,1]*sdiag[1], cmap='jet')
+    #ax.scatter(U[:,1]*sdiag[1], U[:,2]*sdiag[2], U[:,3]*sdiag[3],c=U[:,1]*sdiag[1], cmap='jet')
+    for i in range(m): #plot each point + it's index as text above
+        ax.scatter(U[i,1]*sdiag[1], U[i,2]*sdiag[2], U[i,3]*sdiag[3], cmap='jet')
+        if 1: #annotate each point with its image index
+            ax.text(U[i,1]*sdiag[1], U[i,2]*sdiag[2], U[i,3]*sdiag[3], '%s' % (str(i)), size=10, zorder=1, color='gray')
+            
     plt.title(r'3D Embedding, $\mathit{\epsilon}$=%s' % eps)
     ax.set_xlabel(r'$\psi_1$')
     ax.set_ylabel(r'$\psi_2$')
