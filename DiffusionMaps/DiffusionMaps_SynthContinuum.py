@@ -103,8 +103,8 @@ if 0: #generate distances for image stack of projections for a given projection 
         
 else: #or load in previously-generated distance matrix
     #Dist = np.load('Dist_2DoF_3dRMSD.npy') #distances from PDB files (2 degrees of freedom)
-    #Dist = np.load('Dist_3DoF_3dRMSD.npy') #distances from PDB files (3 degrees of freedom)
-    #Dist = np.load('Dist_3DoF_3dRMSD_v2.npy') #distances from PDB files (3 degrees of freedom)
+    #Dist = np.load('Dist_3DoF_3dRMSD_small.npy') #distances from PDB files (3 degrees of freedom)
+    #Dist = np.load('Dist_3DoF_3dRMSD_large.npy') #distances from PDB files (3 degrees of freedom)
     Dist = np.load('Dist_2DoF_Volumes.npy')*(250**3) #distances from MRC files
     #Dist = np.load('Dist_2DoF_PD0.npy') #distances from projections of MRC files
     
