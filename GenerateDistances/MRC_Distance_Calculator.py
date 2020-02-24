@@ -19,7 +19,8 @@ from matplotlib.ticker import MaxNLocator
 
 def calc_dist(vol1, vol2):
     dist = LA.norm(vol1 - vol2)
-    return np.divide(dist, np.shape(vol1)[0]**3)
+    #return np.divide(dist, np.shape(vol1)[0]**3)
+    return dist
     
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
