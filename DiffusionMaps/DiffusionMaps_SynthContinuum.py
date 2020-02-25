@@ -1,12 +1,10 @@
 import sys, os, re
 import numpy as np
 from numpy import linalg as LA
-from itertools import permutations, combinations
 from scipy.spatial.distance import pdist, cdist, squareform
 import pandas as pd
 import matplotlib
 from matplotlib import rc
-#matplotlib.rc('text', usetex = True)
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from pylab import imshow, show, loadtxt, axes
@@ -30,7 +28,7 @@ if 1: #Times font for all figures
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 
 # =============================================================================
-# generate distances (if 1) or load previously-computed distances (if 0):
+# Generate distances (if 1) or load previously-computed distances (if 0)
 # =============================================================================
 
 if 0: #generate distances for image stack of projections for a given projection direction ('PD', as chosen above)
@@ -98,21 +96,22 @@ if 0: #generate distances for image stack of projections for a given projection 
         # other options: ('sqeuclidean'), (minkowski', p=2.), ('cityblock'), ('cosine'), ('correlation'),
                         #('chebyshev'), (canberra'), ('braycurtis')
        
-    if 0: #save distance matrix for subsequent use
-        np.save('Dist_PD%s.npy' % PD, Dist)
+    if 1: #save distance matrix for subsequent use
+        np.save('Dist_2DoF_PD%s.npy' % PD, Dist)
         
 else: #or load in previously-generated distance matrix
     #Dist = np.load('Dist_2DoF_3dRMSD.npy') #distances from PDB files (2 degrees of freedom)
-    #Dist = np.load('Dist_3DoF_3dRMSD_small.npy') #distances from PDB files (3 degrees of freedom)
-    #Dist = np.load('Dist_3DoF_3dRMSD_large.npy') #distances from PDB files (3 degrees of freedom)
+    #Dist = np.load('Dist_3DoF_3dRMSD.npy') #distances from PDB files (3 degrees of freedom)
+    #Dist = np.load('Dist_3DoF_3dRMSD_v2.npy') #distances from PDB files (3 degrees of freedom)
     Dist = np.load('Dist_2DoF_Volumes.npy')*(250**3) #distances from MRC files
+    #Dist = np.load('Dist_3DoF_Volumes_large.npy')*(250**3) #distances from MRC files
     #Dist = np.load('Dist_2DoF_PD0.npy') #distances from projections of MRC files
     
     m = np.shape(Dist)[0]#number of states to consider from distance matrix; m <= len(dataPaths); e.g., m=20 for 1D motion
     
 Dist = Dist[0:m,0:m] #needed if m <= len(dataPaths), as defined above 
 
-if 1: #plot distance matrix
+if 0: #plot distance matrix
     imshow(Dist, cmap='jet', origin='lower', interpolation='nearest')
     plt.title('Distances', fontsize=20)
     plt.xlabel('State')
@@ -121,12 +120,12 @@ if 1: #plot distance matrix
     plt.tight_layout()
     plt.show()
     
-if 1: #plot distances of state_01_01 to all others
+if 0: #plot distances of state_01_01 to all others
     plt.scatter(np.linspace(1,m,m), Dist[0,:])
     plt.show()
 
 # =============================================================================
-# ferguson method to find optimal epsilon:
+# Ferguson method to find optimal epsilon
 # =============================================================================
 
 if 0:
@@ -175,7 +174,7 @@ else:
     #eps = .01 #best for 'Dist_PD_0.npy'; optimal range: [1e-11, 1e1]
 
 # =============================================================================
-# generate optimal Gaussian kernel:
+# Generate optimal Gaussian kernel
 # =============================================================================
 
 A = np.exp(-(Dist**2 / 2*eps)) #similarity matrix
@@ -256,7 +255,7 @@ def check_symmetric(a, rtol=1e-08, atol=1e-08, equal_nan=True):
 print('Hermitian:', check_symmetric(Ms))
 
 # =============================================================================
-# eigendecomposition:
+# Eigendecomposition
 # =============================================================================
 
 if 0: #np.linalg.eigh() version
@@ -303,19 +302,19 @@ if 1: #eignevalue spectrum
     plt.show()
     
 # =============================================================================
-# analysis of diffusion map:
+# Analysis of diffusion map
 # =============================================================================
 
 enum = np.arange(1,m+1)
 
 if 1: #plot 2d diffusion map
     v1 = 1 #eigenfunction to plot on first axis
-    v2 = 2 #eigenfunction to plot on second axi
+    v2 = 2 #eigenfunction to plot on second axis
     plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], c=enum, cmap='gist_rainbow')
     enum = np.arange(1,m+1)
-    if 0: #annotate points in plot with indices of each state
+    if 1: #annotate points in plot with indices of each state
         for i, txt in enumerate(enum):
-            plt.annotate(txt, (U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2]), fontsize=16, zorder=1, color='gray')
+            plt.annotate(txt, (U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2]), fontsize=12, zorder=1, color='gray')
     plt.title(r'2D Embedding, $\mathit{\epsilon}$=%s' % eps)
     plt.xlabel(r'$\psi_1$')
     plt.ylabel(r'$\psi_2$')
@@ -326,71 +325,97 @@ if 1: #plot 2d diffusion map
     plt.ylim(np.amin(U[:,v2])*sdiag[v2]*1.1, np.amax(U[:,v2])*sdiag[v2]*1.1)
     plt.show()
     
-if 1: #2d diffusion map; several higher-order eigenfunction combinations
-    fig = plt.figure()
+if 0: #2d diffusion map; several higher-order eigenfunction combinations
+    if 1:
+        fig = plt.figure()
+        dim = 8
+        idx = 0
+        for v1 in range(1,dim+1):
+            for v2 in range(1,dim+2):
+                if v2 > v1:
+                    if v1 > 1:
+                        plt.subplot(dim, dim, idx-v1+1)
+                    else:
+                        plt.subplot(dim, dim, idx)
     
-    plt.subplot(2, 3, 1)
-    plt.scatter(U[:,1]*sdiag[1], U[:,0]*sdiag[0], c=enum, cmap='gist_rainbow')
-    plt.plot(U[:,1]*sdiag[1], U[:,0]*sdiag[0], zorder=-1, color='black', alpha=.25)
-    plt.xlabel(r'$\Psi_1$', fontsize=20)
-    plt.ylabel(r'$\Psi_0$', fontsize=20, labelpad=-1)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.xlim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-    plt.ylim(np.amin(U[:,0])*sdiag[0]-.00001, np.amax(U[:,0])*sdiag[0]+.00001)
+                    plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], c=enum, cmap='gist_rainbow')
+                    #plt.plot(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], zorder=-1, color='black', alpha=.25)
+                    plt.xlabel(r'$\Psi_%s$' % v1, fontsize=16)
+                    plt.ylabel(r'$\Psi_%s$' % v2, fontsize=16, labelpad=-1)
+                    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+                    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0)) 
+                    plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+                    plt.ylim(np.amin(U[:,v2])*sdiag[v2]*1.1, np.amax(U[:,v2])*sdiag[v2]*1.1)
+                idx += 1
+                
+        plt.tight_layout()
+        plt.show()
     
-    plt.subplot(2, 3, 2)
-    plt.scatter(U[:,1]*sdiag[1], U[:,1]*sdiag[1], c=enum, cmap='gist_rainbow')
-    plt.plot(U[:,1]*sdiag[1], U[:,1]*sdiag[1], zorder=-1, color='black', alpha=.25)
-    plt.xlabel(r'$\Psi_1$', fontsize=20)
-    plt.ylabel(r'$\Psi_1$', fontsize=20, labelpad=-1)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.xlim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-    plt.ylim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-
-    plt.subplot(2, 3, 3)
-    plt.scatter(U[:,1]*sdiag[1], U[:,2]*sdiag[2], c=enum, cmap='gist_rainbow')
-    plt.plot(U[:,1]*sdiag[1], U[:,2]*sdiag[2], zorder=-1, color='black', alpha=.25)
-    plt.xlabel(r'$\Psi_1$', fontsize=20)
-    plt.ylabel(r'$\Psi_2$', fontsize=20, labelpad=-1)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.xlim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-    plt.ylim(np.amin(U[:,2])*sdiag[2]*1.1, np.amax(U[:,2])*sdiag[2]*1.1)
-
-    plt.subplot(2, 3, 4)
-    plt.scatter(U[:,1]*sdiag[1], U[:,3]*sdiag[3], c=enum, cmap='gist_rainbow')
-    plt.plot(U[:,1]*sdiag[1], U[:,3]*sdiag[3], zorder=-1, color='black', alpha=.25)
-    plt.xlabel(r'$\Psi_1$', fontsize=20)
-    plt.ylabel(r'$\Psi_3$', fontsize=20, labelpad=-1)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.xlim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-    plt.ylim(np.amin(U[:,3])*sdiag[3]*1.1, np.amax(U[:,3])*sdiag[3]*1.1) 
+    if 0:
+        v1 = 3
+        
+        plt.subplot(2, 3, 1)
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,0]*sdiag[0], c=enum, cmap='gist_rainbow')
+        plt.plot(U[:,v1]*sdiag[v1], U[:,0]*sdiag[0], zorder=-1, color='black', alpha=.25)
+        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
+        plt.ylabel(r'$\Psi_0$', fontsize=20, labelpad=-1)
+        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+        plt.ylim(np.amin(U[:,0])*sdiag[0]-.00001, np.amax(U[:,0])*sdiag[0]+.00001)
+        
+        plt.subplot(2, 3, 2)
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,1]*sdiag[1], c=enum, cmap='gist_rainbow')
+        plt.plot(U[:,v1]*sdiag[v1], U[:,1]*sdiag[1], zorder=-1, color='black', alpha=.25)
+        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
+        plt.ylabel(r'$\Psi_1$', fontsize=20, labelpad=-1)
+        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+        plt.ylim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
     
-    plt.subplot(2, 3, 5)
-    plt.scatter(U[:,1]*sdiag[1], U[:,4]*sdiag[4], c=enum, cmap='gist_rainbow')
-    plt.plot(U[:,1]*sdiag[1], U[:,4]*sdiag[4], zorder=-1, color='black', alpha=.25)
-    plt.xlabel(r'$\Psi_1$', fontsize=20)
-    plt.ylabel(r'$\Psi_4$', fontsize=20, labelpad=-1)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.xlim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-    plt.ylim(np.amin(U[:,4])*sdiag[4]*1.1, np.amax(U[:,4])*sdiag[4]*1.1)
+        plt.subplot(2, 3, 3)
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,2]*sdiag[2], c=enum, cmap='gist_rainbow')
+        plt.plot(U[:,v1]*sdiag[v1], U[:,2]*sdiag[2], zorder=-1, color='black', alpha=.25)
+        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
+        plt.ylabel(r'$\Psi_2$', fontsize=20, labelpad=-1)
+        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+        plt.ylim(np.amin(U[:,2])*sdiag[2]*1.1, np.amax(U[:,2])*sdiag[2]*1.1)
     
-    plt.subplot(2, 3, 6)
-    plt.scatter(U[:,1]*sdiag[1], U[:,5]*sdiag[5], c=enum, cmap='gist_rainbow')
-    plt.plot(U[:,1]*sdiag[1], U[:,5]*sdiag[5], zorder=-1, color='black', alpha=.25)
-    plt.xlabel(r'$\Psi_1$', fontsize=20)
-    plt.ylabel(r'$\Psi_5$', fontsize=20, labelpad=-1)
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    plt.xlim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
-    plt.ylim(np.amin(U[:,5])*sdiag[5]*1.1, np.amax(U[:,5])*sdiag[5]*1.1)
+        plt.subplot(2, 3, 4)
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,3]*sdiag[3], c=enum, cmap='gist_rainbow')
+        plt.plot(U[:,v1]*sdiag[v1], U[:,3]*sdiag[3], zorder=-1, color='black', alpha=.25)
+        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
+        plt.ylabel(r'$\Psi_3$', fontsize=20, labelpad=-1)
+        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+        plt.ylim(np.amin(U[:,3])*sdiag[3]*1.1, np.amax(U[:,3])*sdiag[3]*1.1) 
+        
+        plt.subplot(2, 3, 5)
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,4]*sdiag[4], c=enum, cmap='gist_rainbow')
+        plt.plot(U[:,v1]*sdiag[v1], U[:,4]*sdiag[4], zorder=-1, color='black', alpha=.25)
+        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
+        plt.ylabel(r'$\Psi_4$', fontsize=20, labelpad=-1)
+        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+        plt.ylim(np.amin(U[:,4])*sdiag[4]*1.1, np.amax(U[:,4])*sdiag[4]*1.1)
+        
+        plt.subplot(2, 3, 6)
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,5]*sdiag[5], c=enum, cmap='gist_rainbow')
+        plt.plot(U[:,v1]*sdiag[v1], U[:,5]*sdiag[5], zorder=-1, color='black', alpha=.25)
+        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
+        plt.ylabel(r'$\Psi_5$', fontsize=20, labelpad=-1)
+        plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+        plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
+        plt.ylim(np.amin(U[:,5])*sdiag[5]*1.1, np.amax(U[:,5])*sdiag[5]*1.1)
     
-    plt.tight_layout()
-    plt.show()
+        plt.tight_layout()
+        plt.show()
 
 if 1: #3d diffusion map
     fig = plt.figure()
@@ -428,10 +453,10 @@ if 1: #3d diffusion map
     plt.show()
     
 # =============================================================================
-# calculate diffusion map geodesics:
+# Calculate diffusion map geodesics
 # =============================================================================
     
-if 1: #plot n-dimensional Euclidean distance from any given reference point
+if 0: #plot n-dimensional Euclidean distance from any given reference point
     dists = []
     ref = 0 #reference point
     for i in range(0,m):
