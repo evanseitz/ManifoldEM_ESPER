@@ -32,7 +32,7 @@ pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 # =============================================================================
 
 if 0: #generate distances for image stack of projections for a given projection direction ('PD', as chosen above)
-    dataDir = os.path.join(pyDir, 'projection_stacks') #folder with all m .mrcs files
+    dataDir = os.path.join(pyDir, 'projection_stacks')#_SS3_small') #folder with all m .mrcs files
     PD = 0 #projection direction
     boxSize = 250 #dimensions of image; e.g, '250' for 250x250
     
@@ -61,9 +61,14 @@ if 0: #generate distances for image stack of projections for a given projection 
         frames[new_m] = stack.data[PD]
         if 0:
             if i == m-1:
-                np.save('z_Image_PD%s.npy' % PD, frames[i])
-                plt.imshow(frames[i])
-                plt.show()
+                np.save('PD_Images/PD%s/State_%s.npy' % (PD,i), frames[i])
+            if 0:
+                import cv2 as cv
+                normalizedImg = np.zeros((250, 250))
+                norm = cv.normalize(frames[i], normalizedImg, 0, 255, cv.NORM_MINMAX)
+                plt.imshow(norm)#frames[i])
+                plt.savefig('PD_Images/PD%s/State_%s.png' % (PD,i), bbox_inches='tight')
+                #plt.show()
 
         if 0: #plot each frame sequentially
             if i < 2: #number of frames to plot
@@ -78,7 +83,7 @@ if 0: #generate distances for image stack of projections for a given projection 
     m = new_m #`new_m` will only change if comparing to partial state space (above)
         
     if 0: #save gif
-        imageio.mimsave('movie_PD_%s.gif' % PD, frames)
+        imageio.mimsave('movie_PD_%s_SS3.gif' % PD, frames)
     
     if 1: #manual distance calculation
         p = 2 #Minkowski distance metric: p1=Manhattan, p2=Euclidean, etc.
@@ -96,19 +101,20 @@ if 0: #generate distances for image stack of projections for a given projection 
         # other options: ('sqeuclidean'), (minkowski', p=2.), ('cityblock'), ('cosine'), ('correlation'),
                         #('chebyshev'), (canberra'), ('braycurtis')
        
-    if 1: #save distance matrix for subsequent use
+    if 0: #save distance matrix for subsequent use
         np.save('Dist_2DoF_PD%s.npy' % PD, Dist)
         
 else: #or load in previously-generated distance matrix
     #Dist = np.load('Dist_2DoF_3dRMSD.npy') #distances from PDB files (2 degrees of freedom)
-    #Dist = np.load('Dist_3DoF_3dRMSD.npy') #distances from PDB files (3 degrees of freedom)
-    #Dist = np.load('Dist_3DoF_3dRMSD_v2.npy') #distances from PDB files (3 degrees of freedom)
+    #Dist = np.load('Dist_3DoF_3dRMSD_small.npy') #distances from PDB files (3 degrees of freedom)
+    #Dist = np.load('Dist_3DoF_3dRMSD_large.npy') #distances from PDB files (3 degrees of freedom)
     Dist = np.load('Dist_2DoF_Volumes.npy')*(250**3) #distances from MRC files
+    #Dist = np.load('Dist_3DoF_Volumes_small.npy')*(250**3) #distances from MRC files
     #Dist = np.load('Dist_3DoF_Volumes_large.npy')*(250**3) #distances from MRC files
     #Dist = np.load('Dist_2DoF_PD0.npy') #distances from projections of MRC files
     
     m = np.shape(Dist)[0]#number of states to consider from distance matrix; m <= len(dataPaths); e.g., m=20 for 1D motion
-    
+
 Dist = Dist[0:m,0:m] #needed if m <= len(dataPaths), as defined above 
 
 if 0: #plot distance matrix
@@ -166,23 +172,24 @@ if 0:
         plt.show()
 
     if 0: #save Ferguson plot to file
-        np.save('FERG_SS3_PDB.npy', [logEps, logSumWij])
+        np.save('FERG_SS3_PDB_small.npy', [logEps, logSumWij])
 
 else:
     #eps = 1e-4 #best for 'Dist_3D_RMSD.npy'; optimal range: [1e-13, 1e-4]
-    eps = 1e-7 #best for 'Dist_MRCs.npy'; optimal range: [1e-18, 1e-7]
+    eps = 1e-7#1e-7 #best for 'Dist_MRCs.npy'; optimal range: [1e-18, 1e-7]
     #eps = .01 #best for 'Dist_PD_0.npy'; optimal range: [1e-11, 1e1]
 
 # =============================================================================
-# Generate optimal Gaussian kernel
+# Generate optimal Gaussian kernel for Similarity Matrix (A)
 # =============================================================================
 
 A = np.exp(-(Dist**2 / 2*eps)) #similarity matrix
 
-alpha = 1 #currently unassigned (always alpha=1)
-    # alpha = 1.0: Laplace-Beltrami operator
-    # alpha = 0.5: Fokker-Planck diffusion
-    # alpha = 0.0: graph Laplacian normalization
+'''
+# alpha = 1.0: Laplace-Beltrami operator (default)
+# alpha = 0.5: Fokker-Planck diffusion
+# alpha = 0.0: graph Laplacian normalization
+'''
 
 if 0: #plot similarity matrix, A
     imshow(A, cmap='jet', origin='lower')
@@ -191,12 +198,12 @@ if 0: #plot similarity matrix, A
     plt.tight_layout()
     show()
     
-    rowSums = np.sum(A,axis=1)
+    rowSums = np.sum(A, axis=1)
     if 0:
         print('minimum affinity:', np.where(rowSums == np.amin(rowSums)))
-        plt.scatter(np.linspace(1,m,m),rowSums)
-        plt.xlim(1,m)
-        plt.ylim(np.amin(rowSums),np.amax(rowSums))
+        plt.scatter(np.linspace(1,m,m), rowSums)
+        plt.xlim(1, m)
+        plt.ylim(np.amin(rowSums), np.amax(rowSums))
         plt.show()
         
     if 0: #similarity of state_01_01 to all others
@@ -204,7 +211,7 @@ if 0: #plot similarity matrix, A
         plt.show()
 
 # =============================================================================
-# normalized graph laplacian construction:        
+# Markov Transition Matrix (M) construction:        
 # =============================================================================
 
 D = np.ndarray(shape=(m,m), dtype=float) #diagonal matrix
@@ -223,36 +230,41 @@ if 0: #plot diagonal matrix, D
     plt.tight_layout()
     show()
     
-D_inv = scipy.linalg.fractional_matrix_power(D, -1)
-M = np.matmul(A, D_inv)
-
-if 0: #plot Markov Transition matrix, M
+Dinv = scipy.linalg.fractional_matrix_power(D, -1)
+M = np.matmul(A, Dinv) #Markov transition matrix; normalization of A to be row stochastic
+if 0: #check Markov transition matrix is row stochastic
     print(np.sum(M, axis=0)) #should be all 1's
-    imshow(M, cmap='jet', origin='lower')
-    plt.title('Markov Transition Matrix', fontsize=20)
-    plt.colorbar()
-    plt.tight_layout()
-    show()
-    
-    MrowSums = np.sum(M,axis=0)
-    
-    if 0:
-        print('minimum affinity:', np.where(MrowSums == np.amin(MrowSums)))
-        plt.scatter(np.linspace(1,m,m),MrowSums)
-        plt.xlim(1,m)
-        plt.ylim(np.amin(MrowSums),np.amax(MrowSums))
-        plt.show()
 
-# note: M is adjoint to symmetric matrix Ms:     
-D_inv_half = scipy.linalg.sqrtm(D_inv)
-D_half = scipy.linalg.sqrtm(D)
-Ms0 = np.matmul(D_inv_half, M)
-Ms = np.matmul(Ms0, D_half)
-L = np.matmul(M, D_inv) - np.ones(len(M)) #normalized graph Laplacian (using Ms instead, below)
+if 0: # constructing the density invariant Graph Laplacian:
+    # ================================================================================
+    # cite: Graph Laplacian Tomography From Unknown Random Projections; Coifman (2008)
+    # ================================================================================
+    L = M - np.identity(len(M)) #negatively defined normalized graph Laplacian
+    W_Dinv = np.matmul(Dinv, A)
+    Wtilda = np.matmul(W_Dinv, Dinv)
+    Dtilda = np.ndarray(shape=(m,m), dtype=float) #diagonal matrix
+    for i in range(0,m):
+        for j in range(0,m):
+            if i == j:
+                Dtilda[i,j] = np.sum(Wtilda[i], axis=0)
+            else:
+                Dtilda[i,j] = 0
+    Dtildainv = scipy.linalg.fractional_matrix_power(Dtilda, -1)
+    Mtilda = np.matmul(Wtilda, Dtildainv)
+    Ltilda = Mtilda - np.identity(len(Wtilda)) #density invariant graph Laplacian
 
+# ==============================================================================
+# cite: Systematic Determination... for Chain Dynamics Using DM; Ferguson (2010)
+# ==============================================================================
+Dinv_half = scipy.linalg.sqrtm(Dinv)
+Dhalf = scipy.linalg.sqrtm(D)
+Ms0 = np.matmul(Dinv_half, M)
+Ms = np.matmul(Ms0, Dhalf) #note that M is adjoint to symmetric matrix Ms   
+    
 def check_symmetric(a, rtol=1e-08, atol=1e-08, equal_nan=True):
     return np.allclose(a, a.T, rtol=rtol, atol=atol)
 print('Hermitian:', check_symmetric(Ms))
+
 
 # =============================================================================
 # Eigendecomposition
@@ -277,9 +289,10 @@ if 0: #np.linalg.eigh() version
 else: #np.linalg.svd() version; computationally same result as above
     U, sdiag, vh = np.linalg.svd(Ms) #vh = U.T
     sdiag = sdiag**(2.) #eigenvalues given by s**2
+    
     if 0:
-        np.save('y_Eig_PD%s_SS1_subset6.npy' % PD, sdiag)
-        np.save('y_DM_PD%s_SS1_subset6.npy' % PD, U)
+        np.save('Eig_SS3_PD1.npy', sdiag)
+        np.save('DM_SS3_PD1.npy', U)
     
 if 0: #orthogonality check
     print(np.sum(U[:,0]*U[:,0])) #should be 1
@@ -328,22 +341,25 @@ if 1: #plot 2d diffusion map
 if 0: #2d diffusion map; several higher-order eigenfunction combinations
     if 1:
         fig = plt.figure()
-        dim = 8
+        dim = 9
         idx = 0
-        for v1 in range(1,dim+1):
+        for v1 in range(1,dim+2):
             for v2 in range(1,dim+2):
                 if v2 > v1:
                     if v1 > 1:
-                        plt.subplot(dim, dim, idx-v1+1)
+                        plt.subplot(dim, dim, idx-v1*2+2)
                     else:
                         plt.subplot(dim, dim, idx)
     
                     plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], c=enum, cmap='gist_rainbow')
                     #plt.plot(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], zorder=-1, color='black', alpha=.25)
-                    plt.xlabel(r'$\Psi_%s$' % v1, fontsize=16)
-                    plt.ylabel(r'$\Psi_%s$' % v2, fontsize=16, labelpad=-1)
+                    plt.xlabel(r'$\Psi_%s$' % v1, fontsize=14)
+                    plt.ylabel(r'$\Psi_%s$' % v2, fontsize=14, labelpad=-1)
                     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
                     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0)) 
+                    plt.rc('font', size=6)
+                    plt.tick_params(axis="x", labelsize=6)
+                    plt.tick_params(axis="y", labelsize=6)
                     plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
                     plt.ylim(np.amin(U[:,v2])*sdiag[v2]*1.1, np.amax(U[:,v2])*sdiag[v2]*1.1)
                 idx += 1
@@ -352,63 +368,64 @@ if 0: #2d diffusion map; several higher-order eigenfunction combinations
         plt.show()
     
     if 0:
-        v1 = 3
+        v1 = 1
+        s=35
         
         plt.subplot(2, 3, 1)
-        plt.scatter(U[:,v1]*sdiag[v1], U[:,0]*sdiag[0], c=enum, cmap='gist_rainbow')
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,0]*sdiag[0], c=enum, cmap='gist_rainbow', s=s)
         plt.plot(U[:,v1]*sdiag[v1], U[:,0]*sdiag[0], zorder=-1, color='black', alpha=.25)
-        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
-        plt.ylabel(r'$\Psi_0$', fontsize=20, labelpad=-1)
+        plt.xlabel(r'$\lambda_%s\Psi_%s$' % (v1,v1), fontsize=20, labelpad=10)
+        plt.ylabel(r'$\lambda_0\Psi_0$', fontsize=20, labelpad=-1)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
         plt.ylim(np.amin(U[:,0])*sdiag[0]-.00001, np.amax(U[:,0])*sdiag[0]+.00001)
         
         plt.subplot(2, 3, 2)
-        plt.scatter(U[:,v1]*sdiag[v1], U[:,1]*sdiag[1], c=enum, cmap='gist_rainbow')
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,1]*sdiag[1], c=enum, cmap='gist_rainbow', s=s)
         plt.plot(U[:,v1]*sdiag[v1], U[:,1]*sdiag[1], zorder=-1, color='black', alpha=.25)
-        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
-        plt.ylabel(r'$\Psi_1$', fontsize=20, labelpad=-1)
+        plt.xlabel(r'$\lambda_%s\Psi_%s$' % (v1,v1), fontsize=20, labelpad=10)
+        plt.ylabel(r'$\lambda_1\Psi_1$', fontsize=20, labelpad=-1)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
         plt.ylim(np.amin(U[:,1])*sdiag[1]*1.1, np.amax(U[:,1])*sdiag[1]*1.1)
     
         plt.subplot(2, 3, 3)
-        plt.scatter(U[:,v1]*sdiag[v1], U[:,2]*sdiag[2], c=enum, cmap='gist_rainbow')
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,2]*sdiag[2], c=enum, cmap='gist_rainbow', s=s)
         plt.plot(U[:,v1]*sdiag[v1], U[:,2]*sdiag[2], zorder=-1, color='black', alpha=.25)
-        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
-        plt.ylabel(r'$\Psi_2$', fontsize=20, labelpad=-1)
+        plt.xlabel(r'$\lambda_%s\Psi_%s$' % (v1,v1), fontsize=20, labelpad=10)
+        plt.ylabel(r'$\lambda_2\Psi_2$', fontsize=20, labelpad=-1)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
         plt.ylim(np.amin(U[:,2])*sdiag[2]*1.1, np.amax(U[:,2])*sdiag[2]*1.1)
     
         plt.subplot(2, 3, 4)
-        plt.scatter(U[:,v1]*sdiag[v1], U[:,3]*sdiag[3], c=enum, cmap='gist_rainbow')
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,3]*sdiag[3], c=enum, cmap='gist_rainbow', s=s)
         plt.plot(U[:,v1]*sdiag[v1], U[:,3]*sdiag[3], zorder=-1, color='black', alpha=.25)
-        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
-        plt.ylabel(r'$\Psi_3$', fontsize=20, labelpad=-1)
+        plt.xlabel(r'$\lambda_%s\Psi_%s$' % (v1,v1), fontsize=20, labelpad=10)
+        plt.ylabel(r'$\lambda_3\Psi_3$', fontsize=20, labelpad=-1)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
         plt.ylim(np.amin(U[:,3])*sdiag[3]*1.1, np.amax(U[:,3])*sdiag[3]*1.1) 
         
         plt.subplot(2, 3, 5)
-        plt.scatter(U[:,v1]*sdiag[v1], U[:,4]*sdiag[4], c=enum, cmap='gist_rainbow')
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,4]*sdiag[4], c=enum, cmap='gist_rainbow', s=s)
         plt.plot(U[:,v1]*sdiag[v1], U[:,4]*sdiag[4], zorder=-1, color='black', alpha=.25)
-        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
-        plt.ylabel(r'$\Psi_4$', fontsize=20, labelpad=-1)
+        plt.xlabel(r'$\lambda_%s\Psi_%s$' % (v1,v1), fontsize=20, labelpad=10)
+        plt.ylabel(r'$\lambda_4\Psi_4$', fontsize=20, labelpad=-1)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
         plt.ylim(np.amin(U[:,4])*sdiag[4]*1.1, np.amax(U[:,4])*sdiag[4]*1.1)
         
         plt.subplot(2, 3, 6)
-        plt.scatter(U[:,v1]*sdiag[v1], U[:,5]*sdiag[5], c=enum, cmap='gist_rainbow')
+        plt.scatter(U[:,v1]*sdiag[v1], U[:,5]*sdiag[5], c=enum, cmap='gist_rainbow', s=s)
         plt.plot(U[:,v1]*sdiag[v1], U[:,5]*sdiag[5], zorder=-1, color='black', alpha=.25)
-        plt.xlabel(r'$\Psi_%s$' % v1, fontsize=20)
-        plt.ylabel(r'$\Psi_5$', fontsize=20, labelpad=-1)
+        plt.xlabel(r'$\lambda_%s\Psi_%s$' % (v1,v1), fontsize=20, labelpad=10)
+        plt.ylabel(r'$\lambda_5\Psi_5$', fontsize=20, labelpad=-1)
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
@@ -421,20 +438,6 @@ if 1: #3d diffusion map
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     
-    if 0: #preliminary (ad-hoc) fit for testing
-        def Legendre(x, v0):
-            return 1/2. * (3.*((1.25*x)**2.) - v0)
-        curve_x = []
-        curve_y = []
-        scale = 1e-7
-        #print(U[:,1])
-        idx = 0
-        for i in U[:,1]:#np.linspace(-1,1,100):
-            curve_x.append(i*sdiag[1])
-            curve_y.append(Legendre(i, U[idx,0]) * sdiag[1])
-            idx += 1
-        ax.plot(curve_x, curve_y)
-
     if 1:
         ax.scatter(U[:,1]*sdiag[1], U[:,2]*sdiag[2], U[:,3]*sdiag[3], c=enum, cmap='gist_rainbow')
     else: #annotate indices
@@ -513,3 +516,4 @@ if 0: #plot geodesic distance between neighboring states
         plt.xlim(-1,m+1)
         plt.ylim(min(dists),max(dists)) 
         plt.show()
+        
