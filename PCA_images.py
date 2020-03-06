@@ -17,13 +17,13 @@ from sklearn.decomposition import PCA
 from Bio.PDB import PDBParser
 
 # ====================================================================================
-# Diffusion Maps (run via 'python DM_SyntheticContinuum.py') 
-# Authors:    E. Seitz @ Columbia University - Frank Lab - 2020
+# PCA for images via image stack (run via 'python PCA_images.py') 
+# Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # ====================================================================================
 
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
-dataDir = os.path.join(pyDir, 'Datasets')
+dataDir = os.path.join(pyDir, 'Datasets/3_Projections_1D')
 
 # =============================================================================
 # Import data into array (images from PD)
