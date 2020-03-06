@@ -82,7 +82,7 @@ Y = X_std.dot(W)
 
 if 0:
     np.save('PCA_val_atom.npy', eig_vals)
-    np.save('PCA_vec_atom.npy', eig_vecs)
+    np.save('PCA_vec_atom.npy', Y)
 
 # =============================================================================
 # Analysis of embedding
