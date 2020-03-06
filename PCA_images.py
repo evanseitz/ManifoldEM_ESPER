@@ -54,7 +54,7 @@ for i in range(m):
     stack = mrcfile.open(dataPaths[i])
     
     if 0: #optional: add noise to each image
-        frames[i] = GenNoise.op(stack.data[PD], 0.1)
+        frames[i] = GenNoise.op(stack.data[PD], 0.1) #SNR = 0.1 for experimental regime
     else:
         frames[i] = stack.data[PD]
     if 0: #plot each frame sequentially
