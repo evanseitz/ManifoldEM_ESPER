@@ -72,7 +72,7 @@ def normalize(image):
         print('bg_std:', bg_std)
     return img_norm
 
-def op(img_orig, SNR): #0.1
+def op(img_orig, SNR): #experimental SNR ~ 0.1
     
     sig_mean, noise_std = find_SNR(img_orig, SNR) #find SNR
     img_noise = add_noise(sig_mean, noise_std, img_orig) #apply noise
