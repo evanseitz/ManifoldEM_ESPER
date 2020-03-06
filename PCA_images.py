@@ -126,7 +126,7 @@ Y = X_std.dot(W)
 
 if 0:
     np.save('PCA_val_image.npy', eig_vals)
-    np.save('PCA_vec_image.npy', eig_vecs)
+    np.save('PCA_vec_image.npy', Y)
 
 # =============================================================================
 # Analysis of embedding
