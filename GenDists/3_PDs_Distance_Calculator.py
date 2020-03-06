@@ -22,6 +22,8 @@ import mrcfile
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 parDir = os.path.abspath(os.path.join(pyDir, os.pardir))
 dataDir = os.path.join(parDir, 'Datasets/3_Projections_1D') #folder with all .mrcs files
+sys.path.insert(0, parDir)
+import GenNoise
 
 # =============================================================================
 # Load in images from image stack for a given projection direction (PD)
@@ -51,24 +53,31 @@ for i in range(m):
 #for i in [1,2,3]: #to compare manifold of "full" state space with partial (for experimenting)
     print(dataPaths[i])
     stack = mrcfile.open(dataPaths[i])
-    frames[new_m] = stack.data[PD]
     
+    if 0: #optional: add noise to each image
+        frames[new_m] = GenNoise.op(stack.data[PD], 0.1) #SNR = 0.1 for experimental regime
+    else:
+        frames[new_m] = stack.data[PD]
+        
     if 0:
         if i == m-1: #save last image from stack to file
-            np.save('PD%s_State_%s.npy' % (PD,i), frames[i])
+            np.save('PD_%s_frame_%s.npy' % (PD,i+1), frames[i])
+            matplotlib.image.imsave('PD_%s_frame_%s.png' % (PD,i+1), frames[i])
+
     if 0: #plot each frame sequentially
         if i < 2: #number of frames to plot
-            plt.imshow(frames[i])
+            plt.imshow(frames[i], cmap='gray')
             plt.show()
-            plt.hist(frames[i],bins=100)
-            plt.show()
-            print('image mean:', np.mean(frames[i]))
-            print('image std:', np.std(frames[i]))
+            if 0:
+                plt.hist(frames[i],bins=100)
+                plt.show()
+                print('image mean:', np.mean(frames[i]))
+                print('image std:', np.std(frames[i]))
     stack.close()
     new_m += 1  
 m = new_m #new_m will only change if comparing to partial state space (above)
     
-if 1: #save gif
+if 0: #save gif
     imageio.mimsave('SS1_PD_%s.gif' % PD, frames)
     
 # =============================================================================
@@ -89,9 +98,9 @@ else: #or use scipy library for distance metric:
                     #('chebyshev'), (canberra'), ('braycurtis')
    
 if 1: #save distance matrix for subsequent use
-    np.save('Dist_SS1_PD%s.npy' % PD, Dist)
+    np.save('Dist_SS1_PD%s_test.npy' % PD, Dist)
     
-if 1:
+if 0:
     plt.imshow(Dist, origin='lower', interpolation='nearest', cmap='jet')
     plt.colorbar()
     plt.tight_layout()
