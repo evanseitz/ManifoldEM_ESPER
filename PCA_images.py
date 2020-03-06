@@ -15,9 +15,10 @@ import mrcfile
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from Bio.PDB import PDBParser
+import GenNoise
 
 # ====================================================================================
-# PCA for images via image stack (run via 'python PCA_images.py') 
+# PCA on images from image stack (run via 'python PCA_images.py') 
 # Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # ====================================================================================
@@ -29,7 +30,7 @@ dataDir = os.path.join(pyDir, 'Datasets/3_Projections_1D')
 # Import data into array (images from PD)
 # =============================================================================
 
-m = 400 #number of states
+m = 20 #number of states
 PD = 0 #projection direction
 boxSize = 250 #dimensions of image; e.g, '250' for 250x250
 
@@ -51,7 +52,11 @@ frames = np.ndarray(shape=(m,boxSize,boxSize))
 for i in range(m):
     print(dataPaths[i])
     stack = mrcfile.open(dataPaths[i])
-    frames[i] = stack.data[PD]
+    
+    if 0: #optional: add noise to each image
+        frames[i] = GenNoise.op(stack.data[PD], 0.1)
+    else:
+        frames[i] = stack.data[PD]
     if 0: #plot each frame sequentially
         if i < 2: #number of frames to plot
             plt.imshow(frames[i], cmap = plt.get_cmap(name = 'gray'))
@@ -125,8 +130,8 @@ W = np.hstack((eig_vecs[:,i].reshape(boxSize**2,1) for i in range(dim)))
 Y = X_std.dot(W)
 
 if 0:
-    np.save('PCA_val_image.npy', eig_vals)
-    np.save('PCA_vec_image.npy', Y)
+    np.save('PCA_val_image_SS1_SNRpt1.npy', eig_vals)
+    np.save('PCA_vec_image_SS1_SNRpt1.npy', Y)
 
 # =============================================================================
 # Analysis of embedding
