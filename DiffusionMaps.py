@@ -40,7 +40,7 @@ Dist = np.load(os.path.join(dataDir, 'Dist_SS2_Volumes.npy'))*(250**3) #distance
 #Dist = np.load(os.path.join(dataDir, 'Dist_SS3_Volumes_large.npy'))*(250**3) #distances from MRC files
 
 ### From 2D projections of 3D Coulomb potential maps (PDs):
-#Dist = np.load(os.path.join('Dist_SS2_PD0.npy')) #distances from projections of MRC files
+#Dist = np.load(os.path.join(dataDir, 'Dist_SS2_PD0.npy')) #distances from projections of MRC files
 # =============================================================================
     
 m = np.shape(Dist)[0] #number of states to consider from distance matrix; e.g., m=20 for 1D motion from SS2
