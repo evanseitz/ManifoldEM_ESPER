@@ -16,7 +16,7 @@ from sklearn.decomposition import PCA
 from Bio.PDB import PDBParser
 
 # ====================================================================================
-# Diffusion Maps (run via 'python DM_SyntheticContinuum.py') 
+# PCA for atomic-coordinate structures (run via 'python PCA_atomic.py') 
 # Authors:    E. Seitz @ Columbia University - Frank Lab - 2020
 #             H. Liao @ Columbia University - Frank Lab - 2020 
 # Contact:   evan.e.seitz@gmail.com
