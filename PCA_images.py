@@ -14,7 +14,6 @@ from matplotlib.pyplot import cm
 import mrcfile
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from Bio.PDB import PDBParser
 import GenNoise
 
 # ====================================================================================
