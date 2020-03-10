@@ -87,7 +87,7 @@ if 1: #manual distance calculation
     p = 2 #Minkowski distance metric: p1=Manhattan, p2=Euclidean, etc.
     for i in range(0,m):
         for j in range(0,m):
-            Dist[i,j] = (np.sum(np.abs((frames[i]-frames[j]))**p) / frames[i].size)**(1./p) #equivalent of 2D-Dist
+            Dist[i,j] = (np.sum(np.abs((frames[i]-frames[j]))**p))# / frames[i].size)**(1./p)
     
 else: #or use scipy library for distance metric:
     stack2 = np.ndarray(shape=(m,boxSize**2), dtype=float)
