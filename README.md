@@ -9,7 +9,7 @@ These algorithms were run using synthetic data from our previous paper **Simulat
 
 ### Required Software:
 - Python
-  - numpy, pylab, matplotlib, mrcfile, csv, itertools
+  - numpy, pylab, matplotlib, mrcfile, csv, itertools, sklearn, PDBParser
 - Chimera
 - PyMol
 - Phenix
