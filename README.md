@@ -3,8 +3,9 @@
 
 This repository contains the software implementation for our paper **Heuristic Analysis of Manifolds from Simulated Cryo-EM Ensemble Data** (Seitz, Schwander, Maji, Acosta-Reyes, Liao, Frank): https://www.biorxiv.org/?TBD?. It contains tools to apply the discussed methods to quasi-continuum models.
 
-These algorithms were run using synthetic data from our previous paper **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank): https://www.biorxiv.org/content/10.1101/864116v1. 
-That previous repository contains tools to generate the discussed synthetic continuum used in this analysis (https://github.com/evanseitz/cryoEM_synthetic_continua).
+These algorithms were run using synthetic data generated as described in the SI and in our previous paper **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank): https://www.biorxiv.org/content/10.1101/864116v1. 
+
+That previous repository contains additional tools to generate the discussed synthetic continuum used in this analysis: https://github.com/evanseitz/cryoEM_synthetic_continua.
 
 ### Instructions:
 
