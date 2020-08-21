@@ -8,6 +8,7 @@ These algorithms use synthetic data generated as described our paper. As well, a
 - Repository: https://github.com/evanseitz/cryoEM_synthetic_continua.
 
 ### Instructions:
+Instructions for each of the scripts in this repository are provided within their corresponding directories. Please see comments within each script for additional details.
 
 ### Required Software:
 - Python
