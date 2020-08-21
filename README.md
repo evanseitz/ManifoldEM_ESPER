@@ -18,6 +18,8 @@ These algorithms use synthetic data generated as described in the SI. As well, a
 - EMAN2
 - RELION
 
+Detailed directions for installing these libraries are available at https://github.com/evanseitz/cryoEM_synthetic_continua.
+
 ### Environment:
 First, install Anaconda. Navigate to your project directory via the command line interface and install the environment corresponding to your operating system via:
 
