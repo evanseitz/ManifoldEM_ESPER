@@ -1,41 +1,12 @@
 # README
-## Cryo-EM Heuristic Analysis
+## DM folder
 
-This repository contains the software implementation for our paper **Heuristic Analysis of Manifolds from Simulated Cryo-EM Ensemble Data** (Seitz, Schwander, Maji, Acosta-Reyes, Liao, Frank): https://www.biorxiv.org/?TBD?. It contains tools to apply the discussed methods to quasi-continuum models.
+This folder contains scripts to peform Diffusion Maps (DM) on the input files that were previously generated in the `0_Data_Inputs` folder. 
 
-These algorithms use synthetic data generated as described in the SI. As well, a detailed description is also provided in our previous paper **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank), along with published repository:
-- Paper: https://www.biorxiv.org/content/10.1101/864116v1
-- Repository: https://github.com/evanseitz/cryoEM_synthetic_continua.
+To setup for this procedure, a distance matrix must be generated for each previously created PD image stack. First, make sure to change the `PD` and `tau` variables in the `1_Distances_PDs.py` script to correspond to your requested input data. Next, navigate to this directory in your command line interface (CLI), and, after activating the proper environment (see this repository's main `README` file), run `python 1_Distances_PDs.py`. This will generate a Euclidean distance matrix (one per PD run in this way) in the `Data_Distances` folder.
 
-### Instructions:
+Once distances for each PD have been saved to file, you can begin experimenting with the `2_Diffusion_Maps.py` script. Within this script, make sure the `tau` and `PD` variables are again correct, and, if using your own synthetic data, toggle on the `Method to estiamte optimal epsilon` switch. You will need to first perform a trial run of this script to view the corresponding Gaussian bandwidth plot (`plot of Ferguson method`) to best estimate the `eps` value for your dataset (see our paper). Once this has been obtained, change the `eps = 1e10` line to match the outcome of your analysis, and rerun the script a second (final) time. This value of `eps` should be consistent across all input PD image stacks generated with equivalent SNR.
 
-### Required Software:
-- Python
-  - numpy, pylab, matplotlib, mrcfile, csv, itertools, sklearn
-- Chimera
-- PyMol
-- Phenix
-- EMAN2
-- RELION
+All outputs will be stored in the `Data_Manifolds` folder. As an example of outputs, the eigenvalues and eigenvectors for the first PD (generated with `SNR = infinite` and `tau = 1`) have been pre-generated in that folder.
 
-### Environment:
-First, install Anaconda. Navigate to your project directory via the command line interface and install the environment corresponding to your operating system via:
-
-`conda create --name synth --file env_linux_64.txt`
-
-`conda create --name synth --file env_mac_64.txt`
-
-Once the Anaconda environment is installed, it must be initiated each time before running (the majority of) these scripts via the command: `conda activate synth`
-
-When you are done using the environment, always exit via: `conda deactivate`
-
-### Attribution:
-Please cite ...
-
-DOI
-
-
-### License:
-Copyright 2018-2020 Evan Seitz
-
-For further details, please see the LICENSE file.
+On can next elect to run the `DM_Viewer.py` script to analyze these output files in the form of eigenvalue spectrum and manifold subspaces. This script provides a number of informative and adjustable plots to help view this complex information.
