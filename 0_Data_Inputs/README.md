@@ -1,4 +1,5 @@
-# README: Data Inputs folder
+# README: 
+## Data Inputs folder
 
 This folder contains files corresponding to the input synthetic datasets, which must be created upstream for use in this repository. General instructions for creating synthetic data are included in the SI of our paper, with detailed code also provided in our external repository (https://github.com/evanseitz/cryoEM_synthetic_continua). As an example, we have provided a subset of our own synthetic data in these folders.
 
