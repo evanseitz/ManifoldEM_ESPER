@@ -21,15 +21,7 @@ These algorithms use synthetic data generated as described in the SI. As well, a
 Detailed directions for installing these libraries are available at https://github.com/evanseitz/cryoEM_synthetic_continua.
 
 ### Environment:
-First, install Anaconda. Navigate to your project directory via the command line interface and install the environment corresponding to your operating system via:
-
-`conda create --name synth --file env_linux_64.txt`
-
-`conda create --name synth --file env_mac_64.txt`
-
-Once the Anaconda environment is installed, it must be initiated each time before running (the majority of) these scripts via the command: `conda activate synth`
-
-When you are done using the environment, always exit via: `conda deactivate`
+Users will first need to install Anaconda and then create an environment with the above Python requirements. Once the Anaconda environment is setup, remember to initiate it each time before running the scripts in this repository. As well, when you are done using the environment, always exit via: `conda deactivate`
 
 ### Attribution:
 Please cite ...
