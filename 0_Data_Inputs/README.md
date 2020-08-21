@@ -1,41 +1,11 @@
-# README
-## Cryo-EM Heuristic Analysis
+# README: Data Inputs folder
 
-This repository contains the software implementation for our paper **Heuristic Analysis of Manifolds from Simulated Cryo-EM Ensemble Data** (Seitz, Schwander, Maji, Acosta-Reyes, Liao, Frank): https://www.biorxiv.org/?TBD?. It contains tools to apply the discussed methods to quasi-continuum models.
+This folder contains files corresponding to the input synthetic datasets, which must be created upstream for use in this repository. General instructions for creating synthetic data are included in the SI of our paper, with detailed code also provided in our external repository (https://github.com/evanseitz/cryoEM_synthetic_continua). As an example, we have provided a subset of our own synthetic data in these folders.
 
-These algorithms use synthetic data generated as described in the SI. As well, a detailed description is also provided in our previous paper **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank), along with published repository:
-- Paper: https://www.biorxiv.org/content/10.1101/864116v1
-- Repository: https://github.com/evanseitz/cryoEM_synthetic_continua.
+The `1_AtomicCoords_2D` folder contains the initial atomic coordinate files (PDBs) spanning 400 states with 2 degrees of freedom (`2D`). These are available for comparing final outputs with ground truth, and will not be used for any other purpose in this repository other than that validation.
 
-### Instructions:
+The `2_PDs_2D` folder contains 400 images (corresponding to the aforementioned 400 states) for each of 5 projection directions (PDs). These are the same 5 PD datasets that are examined in the `Analysis: State Space 2` section of our paper. These images are pristine (SNR = infinity), and can be investigated immediately using code in other sections of this repository.
 
-### Required Software:
-- Python
-  - numpy, pylab, matplotlib, mrcfile, csv, itertools, sklearn
-- Chimera
-- PyMol
-- Phenix
-- EMAN2
-- RELION
+To emulate experimental conditions, these pristine images can be duplicated a fixed number of times (via the `tau` parameter), with each duplicate image given unique additive Gaussian noise (via calculation of appropriate SNR, as chosen by the user). The script `3_Generate_SNR_tau.py` can be run on the PDs in `2_PDs_2D` to generate new image stacks in the `3_PDs_2D_SNR_tau` folder (with `SNR` and `tau` values alterable within that script). As an example of `tau` usage, `tau = 5` will result in 5 duplicates per state, and thus 5 x 400 = 2000 images per new PD stack. Finally, as a note, due to data limitations, the `3_PDs_2D_SNR_tau` folder has no pre-generated data ready for use, and thus must be created by the user after downloading this repository.
 
-### Environment:
-First, install Anaconda. Navigate to your project directory via the command line interface and install the environment corresponding to your operating system via:
-
-`conda create --name synth --file env_linux_64.txt`
-
-`conda create --name synth --file env_mac_64.txt`
-
-Once the Anaconda environment is installed, it must be initiated each time before running (the majority of) these scripts via the command: `conda activate synth`
-
-When you are done using the environment, always exit via: `conda deactivate`
-
-### Attribution:
-Please cite ...
-
-DOI
-
-
-### License:
-Copyright 2018-2020 Evan Seitz
-
-For further details, please see the LICENSE file.
+Once you have readied your data in this folder, proceed next to `1_Embedding`.
