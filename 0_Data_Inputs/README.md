@@ -1,7 +1,7 @@
 # README: 
 ## Data Inputs folder
 
-This folder contains files corresponding to the input synthetic datasets, which must be created upstream for use in this repository. General instructions for creating synthetic data are included in the SI of our paper, with detailed code also provided in our external repository (https://github.com/evanseitz/cryoEM_synthetic_continua). As an example, we have provided a subset of our own synthetic data in these folders.
+This folder contains files corresponding to the input synthetic datasets, which must be created upstream for use in this repository. General instructions for creating synthetic data are included in the SI of our paper, with detailed code also provided in our external repository (https://github.com/evanseitz/cryoEM_synthetic_continua). As an example for your immediate use, we have provided a subset of our own synthetic data in these folders.
 
 The `1_AtomicCoords_2D` folder contains the initial atomic coordinate files (PDBs) spanning 400 states with 2 degrees of freedom (`2D`). These are available for comparing final outputs with ground truth, and will not be used for any other purpose in this repository other than that validation.
 
