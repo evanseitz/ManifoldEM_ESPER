@@ -13,7 +13,9 @@ import mrcfile
 import AddNoise
 
 # =============================================================================
-# Generate noisy duplicates of images (run via 'sh 3_SNRtau_Batch.py') 
+# Generate noisy duplicates of images
+run via 'sh 3_SNRtau_Batch.py'...
+# after changing number of PDs therein)
 # Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
