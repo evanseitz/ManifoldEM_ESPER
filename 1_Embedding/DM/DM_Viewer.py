@@ -11,8 +11,9 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.pyplot import cm
 
 # =============================================================================
-# Data viewer for PCA manifolds (run via 'python PCA_Viewer.py') 
+# Data viewer for DM manifolds (run via 'python DM_Viewer.py') 
 # Used for analysis (viewing) manifold characteristics only
+# =============================================================================
 # Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
