@@ -76,7 +76,7 @@ def op(pyDir, PD):
         if 0: #save Ferguson plot to file
             np.save('Ferg_SS1_PD%s.npy' % PD, [logEps0, logSumA0])
     
-    eps = 1e10 #in optimal range for PD_001 supplied; when using alternative...
+    eps = 1e4 #in optimal range for PDs supplied (SNR=0.1, tau=5); when using alternative...
                #...datasets, alter based on above plot
     
     # =========================================================================
