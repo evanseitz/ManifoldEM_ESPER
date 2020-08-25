@@ -29,10 +29,11 @@ if 0: #Times font for all figures
 # =============================================================================
 # Import data into arrays
 # =============================================================================
-Dist = np.load(os.path.join(distDir, 'PD001_tau1_dist.npy')) #distances from projections of MRC files  
+PD = '001'
+Dist = np.load(os.path.join(distDir, 'PD%s_tau1_dist.npy' % PD)) #distance files
 m = np.shape(Dist)[0]  
-U = np.load(os.path.join(maniDir,'PD001_tau1_vec.npy')) #eigenvectors
-sdiag = np.load(os.path.join(maniDir,'PD001_tau1_val.npy')) #eigenvalues
+U = np.load(os.path.join(maniDir,'PD%s_tau1_vec.npy' % PD)) #eigenvectors
+sdiag = np.load(os.path.join(maniDir,'PD%s_tau1_val.npy' % PD)) #eigenvalues
 
 # =============================================================================
 # Analysis of embedding
