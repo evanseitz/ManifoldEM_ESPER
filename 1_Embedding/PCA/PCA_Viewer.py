@@ -11,11 +11,13 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.pyplot import cm
 
 # =============================================================================
-# Data viewer for PCA manifolds (run via 'python PCA_Viewer.py')
+# Data viewer for PCA manifolds (run via 'python PCA_Viewer.py') 
 # Used for analysis (viewing) manifold characteristics only
+# =============================================================================
 # Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
+
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 dataDir = os.path.join(pyDir, 'Data_Manifolds')
 if 0: #Times font for all figures
