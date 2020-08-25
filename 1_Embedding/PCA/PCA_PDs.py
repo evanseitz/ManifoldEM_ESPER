@@ -13,13 +13,16 @@ import mrcfile
 from sklearn.preprocessing import StandardScaler
 
 # =============================================================================
-# PCA on images from image stack
-# First, make sure to alter the `dataPath` and 'tau' variables below to match...
-# ...the naming and parameters used in your inputs
+# Embed each PD image stack via PCA framework
+# =============================================================================
+# SETUP: First, make sure the input file path is correct for your dataset...
+#   ...via the 'dataPath' variable below. You may also want to edit output...
+#   ...names such as those that include `tau` (here, set to 5 as default)
 # RUNNING: To run a series of PDs at once: first edit `1_PCA_Batch.sh`...
-    #...for the total number of PDs requested; e.g., {1...5} for 5 PDs...
-    #...or {1...1} for only the first PD;
-    #...then start processing batch via `sh 1_PCA_Batch.sh`
+#   ...for the total number of PDs requested; e.g., {1...5} for 5 PDs...
+#   ...or {1...1} for only the first PD;
+#   ...then start batch processing via `sh 1_PCA_Batch.sh`
+# =============================================================================
 # Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
@@ -34,8 +37,6 @@ def op(pyDir, PD):
     # =========================================================================
     # Import image stack per PD and standardize
     # =========================================================================
-    
-    tau = 5 #needs to match value used in inputs
     dataPath = os.path.join(dataDir, 'PD%s_SNR_tau5_stack.mrcs' % PD)
     init_stack = mrcfile.mmap(dataPath)
     ss, box, box = init_stack.data.shape
@@ -56,14 +57,12 @@ def op(pyDir, PD):
     # =========================================================================
     # Project data into principal components
     # =========================================================================
-    
     dim = 15 #number of dimensions to consider
     W = np.hstack((eig_vecs[:,i].reshape(box**2,1) for i in range(dim)))
     Y = X_std.dot(W)
     
-    if 1:
-        np.save(os.path.join(outDir, 'PD%s_tau%s_vec.npy' % (PD, tau)), Y)
-        np.save(os.path.join(outDir, 'PD%s_tau%s_val.npy' % (PD, tau)), eig_vals)
+    np.save(os.path.join(outDir, 'PD%s_tau5_vec.npy' % (PD), Y)
+    np.save(os.path.join(outDir, 'PD%s_tau5_val.npy' % (PD), eig_vals)
         
     init_stack.close()
 
