@@ -34,7 +34,7 @@ from matplotlib.ticker import MaxNLocator
 def op(pyDir, PD):
     dataDir = os.path.join(pyDir, 'Data_Distances')
     outDir = os.path.join(pyDir, 'Data_Manifolds')
-    Dist = np.load(os.path.join(dataDir, 'PD%s_tau%s_SNR_dist.npy' % PD))
+    Dist = np.load(os.path.join(dataDir, 'PD%s_tau5_SNR_dist.npy' % PD))
     
     # =========================================================================
     # Distances matrix analysis
@@ -169,7 +169,7 @@ def op(pyDir, PD):
         plt.axhline(y=0, color='k', alpha=.5, linestyle='--', linewidth=1)
         plt.show()
     
-    if 1: #2d diffusion map; sets of higher-order eigenfunction combinations     
+    if 0: #2d diffusion map; sets of higher-order eigenfunction combinations     
         enum = np.arange(1,m+1)
         s = 20
         lw = .5
