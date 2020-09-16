@@ -190,8 +190,8 @@ def op(pyDir, PD):
         for v1 in range(1,dimRows+1):
             for v2 in range(v1+1, v1+dimCols+1):
                 plt.subplot(dimRows, dimCols, idx)
-                plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k') #gist_rainbow, nipy_spectral
-                #plt.plot(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], zorder=-1, color='black', alpha=.25)
+                plt.scatter(U[:,v1], U[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k') #gist_rainbow, nipy_spectral
+                #plt.plot(U[:,v1], U[:,v2], zorder=-1, color='black', alpha=.25)
                 plt.xlabel(r'$\Psi_{%s}$' % v1, fontsize=12, labelpad=5)
                 plt.ylabel(r'$\Psi_{%s}$' % v2, fontsize=12, labelpad=2.5)
                 plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
@@ -209,8 +209,8 @@ def op(pyDir, PD):
                     plt.tick_params(axis="x", labelsize=6)
                     plt.tick_params(axis="y", labelsize=6) 
     
-                plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
-                plt.ylim(np.amin(U[:,v2])*sdiag[v2]*1.1, np.amax(U[:,v2])*sdiag[v2]*1.1)
+                plt.xlim(np.amin(U[:,v1])*1.1, np.amax(U[:,v1])*1.1)
+                plt.ylim(np.amin(U[:,v2])*1.1, np.amax(U[:,v2])*1.1)
                 idx += 1 
         plt.tight_layout()
         plt.subplots_adjust(left=0.02, right=0.99, bottom=0.05, top=0.99, wspace=0.26, hspace=0.23)
