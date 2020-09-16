@@ -46,19 +46,19 @@ cmap = 'nipy_spectral' #'gist_rainbow'
 if 1: #plot 2d diffusion map
     v1 = 1 #eigenfunction to plot on first axis
     v2 = 2 #eigenfunction to plot on second axis
-    plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
+    plt.scatter(U[:,v1], U[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
     enum = np.arange(1,m+1)
     if 0: #annotate points in plot with indices of each state
         for i, txt in enumerate(enum):
-            plt.annotate(txt, (U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2]), fontsize=12, zorder=1, color='gray')
+            plt.annotate(txt, (U[i,v1], U[i,v2]), fontsize=12, zorder=1, color='gray')
     plt.title(r'2D Embedding')
     plt.xlabel(r'$\psi_1$')
     plt.ylabel(r'$\psi_2$')
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.colorbar()
-    plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
-    plt.ylim(np.amin(U[:,v2])*sdiag[v2]*1.1, np.amax(U[:,v2])*sdiag[v2]*1.1)
+    plt.xlim(np.amin(U[:,v1])*1.1, np.amax(U[:,v1])*1.1)
+    plt.ylim(np.amin(U[:,v2])*1.1, np.amax(U[:,v2])*1.1)
     plt.show()
     
 if 1: #2d diffusion map; sets of higher-order eigenfunction combinations       
@@ -70,8 +70,8 @@ if 1: #2d diffusion map; sets of higher-order eigenfunction combinations
         for v1 in range(1,dimRows+1):
             for v2 in range(v1+1, v1+dimCols+1):
                 plt.subplot(dimRows, dimCols, idx)
-                plt.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k') #gist_rainbow, nipy_spectral
-                #plt.plot(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], zorder=-1, color='black', alpha=.25)
+                plt.scatter(U[:,v1], U[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k') #gist_rainbow, nipy_spectral
+                #plt.plot(U[:,v1], U[:,v2], zorder=-1, color='black', alpha=.25)
                 plt.xlabel(r'$\Psi_{%s}$' % v1, fontsize=12, labelpad=5)
                 plt.ylabel(r'$\Psi_{%s}$' % v2, fontsize=12, labelpad=2.5)
                 plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
@@ -89,8 +89,8 @@ if 1: #2d diffusion map; sets of higher-order eigenfunction combinations
                     plt.tick_params(axis="x", labelsize=6)
                     plt.tick_params(axis="y", labelsize=6) 
 
-                plt.xlim(np.amin(U[:,v1])*sdiag[v1]*1.1, np.amax(U[:,v1])*sdiag[v1]*1.1)
-                plt.ylim(np.amin(U[:,v2])*sdiag[v2]*1.1, np.amax(U[:,v2])*sdiag[v2]*1.1)
+                plt.xlim(np.amin(U[:,v1])*1.1, np.amax(U[:,v1])*1.1)
+                plt.ylim(np.amin(U[:,v2])*1.1, np.amax(U[:,v2])*1.1)
                 idx += 1 
         plt.tight_layout()
         plt.subplots_adjust(left=0.02, right=0.99, bottom=0.05, top=0.99, wspace=0.26, hspace=0.23)
@@ -104,11 +104,11 @@ if 1: #3d diffusion map
     v2 = 2
     v3 = 3
     if 1:
-        ax.scatter(U[:,v1]*sdiag[v1], U[:,v2]*sdiag[v2], U[:,v3]*sdiag[v3], c=enum, cmap='gist_rainbow', linewidths=lw, s=s, edgecolor='k')
+        ax.scatter(U[:,v1], U[:,v2], U[:,v3], c=enum, cmap='gist_rainbow', linewidths=lw, s=s, edgecolor='k')
     else: #annotate indices
         for i in range(m): #plot each point + it's index as text above
-            ax.scatter(U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2], U[i,v3]*sdiag[v3])
-            ax.text(U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2], U[i,v3]*sdiag[v3], '%s' % (str(i)), size=10, zorder=1, color='gray') 
+            ax.scatter(U[i,v1], U[i,v2], U[i,v3])
+            ax.text(U[i,v1], U[i,v2], U[i,v3], '%s' % (str(i)), size=10, zorder=1, color='gray') 
     ax.set_xlabel(r'$\psi_1$')
     ax.set_ylabel(r'$\psi_2$')
     ax.set_zlabel(r'$\psi_3$')
