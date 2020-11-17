@@ -1,4 +1,4 @@
 # README
-## Spline Fitting folder
+## Spline Binning folder
 
 TBD
