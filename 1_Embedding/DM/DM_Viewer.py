@@ -22,18 +22,21 @@ pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 maniDir = os.path.join(pyDir, 'Data_Manifolds')
 distDir = os.path.join(pyDir, 'Data_Distances')
 
-if 0: #Times font for all figures
+if 1: #Times font for all figures
     rc('text', usetex=True)
     rc('font', family='serif')
 
 # =============================================================================
 # Import data into arrays
 # =============================================================================
-PD = '001'
-Dist = np.load(os.path.join(distDir, 'PD%s_tau1_dist.npy' % PD)) #distance files
+PD = '005'
+#Dist = np.load(os.path.join(distDir, 'PD%s_tau1_dist.npy' % PD)) #distance files
+Dist = np.load(os.path.join(distDir, 'PD%s_tau5_SNR_dist.npy' % PD)) #distance files
 m = np.shape(Dist)[0]  
-U = np.load(os.path.join(maniDir,'PD%s_tau1_vec.npy' % PD)) #eigenvectors
-sdiag = np.load(os.path.join(maniDir,'PD%s_tau1_val.npy' % PD)) #eigenvalues
+#U = np.load(os.path.join(maniDir,'PD%s_tau1_vec.npy' % PD)) #eigenvectors
+#sdiag = np.load(os.path.join(maniDir,'PD%s_tau1_val.npy' % PD)) #eigenvalues
+U = np.load(os.path.join(maniDir,'PD%s_tau5_SNR_vec.npy' % PD)) #eigenvectors
+sdiag = np.load(os.path.join(maniDir,'PD%s_tau5_SNR_val.npy' % PD)) #eigenvalues
 
 # =============================================================================
 # Analysis of embedding
@@ -43,14 +46,14 @@ s = 20
 lw = .5
 cmap = 'nipy_spectral' #'gist_rainbow'
 
-if 1: #plot 2d diffusion map
+if 0: #plot 2d diffusion map
     v1 = 1 #eigenfunction to plot on first axis
     v2 = 2 #eigenfunction to plot on second axis
     plt.scatter(U[:,v1], U[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
     enum = np.arange(1,m+1)
     if 0: #annotate points in plot with indices of each state
         for i, txt in enumerate(enum):
-            plt.annotate(txt, (U[i,v1], U[i,v2]), fontsize=12, zorder=1, color='gray')
+            plt.annotate(txt, (U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2]), fontsize=12, zorder=1, color='gray')
     plt.title(r'2D Embedding')
     plt.xlabel(r'$\psi_1$')
     plt.ylabel(r'$\psi_2$')
@@ -97,7 +100,7 @@ if 1: #2d diffusion map; sets of higher-order eigenfunction combinations
 
         plt.show()
 
-if 1: #3d diffusion map
+if 0: #3d diffusion map
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     v1 = 1
@@ -122,7 +125,7 @@ if 1: #3d diffusion map
 # Calculate diffusion map geodesics
 # =============================================================================
 
-if 1: #plot n-dimensional Euclidean distance from any given reference point
+if 0: #plot n-dimensional Euclidean distance from any given reference point
     dists = []
     ref = 0 #reference point
     for i in range(0,m):
@@ -163,7 +166,7 @@ if 1: #plot n-dimensional Euclidean distance from any given reference point
     plt.ylim(min(distsRt)*1.1,max(distsRt)*1.1)
     plt.show()
  
-if 1: #DM distance between neighboring states 
+if 0: #DM distance between neighboring states 
     refs = range(0,19)#m-1) #reference points
     distsND = []
     for r in refs:
