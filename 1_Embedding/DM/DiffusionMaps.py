@@ -33,8 +33,8 @@ def op(pyDir, PD):
     outDir = os.path.join(pyDir, 'Data_Manifolds')
     if not os.path.exists(outDir):
         os.mkdir(outDir)
-    Dist = np.load(os.path.join(dataDir, 'PD%s_tau5_SNR_dist.npy' % PD))
-    #Dist = np.load(os.path.join(dataDir, 'PD001_tau1_dist.npy'))
+    #Dist = np.load(os.path.join(dataDir, 'PD%s_tau5_SNR_dist.npy' % PD))
+    Dist = np.load(os.path.join(dataDir, 'PD001_tau1_dist.npy'))
 
     # =========================================================================
     # Distances matrix analysis
@@ -88,6 +88,8 @@ def op(pyDir, PD):
         plt.show()
     if 0: #save Gaussian Bandwidth plot to file
         np.save('GaussianBandwidth_PD%s.npy' % PD, [logEps, logSumWij])
+        
+    #eps = 1e4 #manually input different epsilon (trial and error) if manifolds generated with above methods not converged...
     
     # =========================================================================
     # Generate optimal Gaussian kernel for Similarity Matrix (A)
@@ -179,7 +181,7 @@ def op(pyDir, PD):
         plt.axhline(y=0, color='k', alpha=.5, linestyle='--', linewidth=1)
         plt.show()
     
-    if 0: #2d diffusion map; sets of higher-order eigenfunction combinations     
+    if 1: #2d diffusion map; sets of higher-order eigenfunction combinations     
         enum = np.arange(1,m+1)
         s = 20
         lw = .5
