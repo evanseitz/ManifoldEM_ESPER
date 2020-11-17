@@ -18,8 +18,10 @@ from matplotlib.pyplot import cm
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
 
+PD = '001' #change PD to view here
+
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
-dataDir = os.path.join(pyDir, 'Data_Manifolds')
+dataDir = os.path.join(pyDir, 'Data_Manifolds_126')
 if 0: #Times font for all figures
     rc('text', usetex=True)
     rc('font', family='serif')
@@ -27,8 +29,8 @@ if 0: #Times font for all figures
 # =============================================================================
 # Import data into arrays
 # =============================================================================
-E = np.load(os.path.join(dataDir,'PD001_tau5_val.npy')) #eigenvalues
-Y = np.load(os.path.join(dataDir,'PD001_tau5_vec.npy')) #eigenvectors
+#E = np.load(os.path.join(dataDir,'PD%s_SS2_SNRpt1_tau5_val.npy' % PD)) #eigenvalues
+Y = np.load(os.path.join(dataDir,'PD%s_SS2_SNRpt1_tau5_vec.npy' % PD)) #eigenvectors
 m = np.shape(Y)[0] #number of images for colormap (number of initial states*tau)
 
 # =============================================================================
@@ -39,7 +41,7 @@ cmap = 'nipy_spectral' #'gist_rainbow'
 s = 20
 lw = .5
 
-if 1: #view eigenvalue spectrum
+if 0: #view eigenvalue spectrum
     x = range(1,len(E)+1)
     plt.scatter(x, E)
     plt.title('Eigenvalue Spectrum')
@@ -52,7 +54,7 @@ if 1: #view eigenvalue spectrum
     plt.axhline(y=0, color='k', alpha=.5, linestyle='--', linewidth=1)
     plt.show()
 
-if 1: #view a single 2D subspace
+if 0: #view a single 2D subspace
     fig, ax = plt.subplots()
     ax.scatter(Y[:,0], Y[:,1], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
     if 0:
@@ -83,7 +85,7 @@ if 1: #view an organized array of 2D subspaces
     plt.tight_layout()
     plt.show()
 
-if 1: #view a single 3D subspace
+if 0: #view a single 3D subspace
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     color=cm.gist_rainbow(np.linspace(0,1,m+1))
