@@ -22,7 +22,7 @@ if 0: #render with LaTeX font for figures
 
 # =============================================================================
 # Find optimal N-dimensional rotation for each manifold via 2D histogram...
-# ...method as well as most-probable CM submanifolds ranked in descended order 
+# ...method as well as most-probable CM sub-manifolds ranked in descending order 
 # =============================================================================
 # SETUP: First, make sure all user parameters are correct for your dataset...
 #   ...below via the 'User parameters' section ('PCA' for embedding type...
@@ -38,23 +38,29 @@ if 0: #render with LaTeX font for figures
 
 def op(pyDir, PD):
     parDir = os.path.abspath(os.path.join(pyDir, os.pardir))
-    outDir = os.path.join(pyDir, 'Data_Rotations')
-    if not os.path.exists(outDir):
-        os.mkdir(outDir)
     # =========================================================================
     # User parameters
     # =========================================================================
+    groundTruth = True #optional, for comparing outputs with ground-truth knowledge
+    PCA = True #specify if manifolds from PCA or DM folder {if False, DM is True}
+    if PCA is True:
+        outDir = os.path.join(pyDir, 'Data_Rotations_PCA')
+    else:
+        outDir = os.path.join(pyDir, 'Data_Rotations_DM')
+    if not os.path.exists(outDir):
+        os.mkdir(outDir)
+        
     pdDir = os.path.join(outDir, 'PD%s' % PD)
     if not os.path.exists(pdDir):
         os.mkdir(pdDir)
-    PCA = True #specify if manifolds from PCA or DM folder {if False, DM is True}
+        
     if PCA is True: #change end of file path to match name of your PCA outputs
         if 0:
             maniPath = os.path.join(parDir, '1_Embedding/PCA/Data_Manifolds/PD%s_tau5_SNR_vec.npy' % PD) 
         else: #example 126 PD great circle provided in repository
-            maniPath = os.path.join(parDir, '1_Embedding/PCA/Data_Manifolds_126/PD%s_SS2_SNRpt1_tau5_vec.npy' % PD) 
+            maniPath = os.path.join(parDir, '1_Embedding/PCA/Data_Manifolds_126/PD%s_SS2_SNRpt1_tau5_vec.npy' % PD)
     else: #change end of file path to match name of your DM outputs
-        maniPath = os.path.join(parDir, '1_Embedding/DM/Data_Manifolds/PD%s_tau5_vec.npy' % PD)
+        maniPath = os.path.join(parDir, '1_Embedding/DM/Data_Manifolds/PD%s_tau5_SNR_vec.npy' % PD)
     print('Manifold Info:', np.shape(np.load(maniPath)))
     
     # =========================================================================
@@ -82,6 +88,30 @@ def op(pyDir, PD):
         U_init = U[:,0:dim] #manifold subspace (for 'dim' dimensions)
     else: #if DM, don't use steady-state eigenvector (v_0)
         U_init = U[:,1:dim+1]
+        
+    if 0: #view an organized array of 2D subspaces
+        fig = plt.figure()
+        dimRows, dimCols = dim-1, dim
+        idx = 1
+        plt.rc('font', size=6)
+        for v1 in range(1,dimRows+1):
+            for v2 in range(v1+1, v1+dimCols+1):
+                plt.subplot(dimRows, dimCols, idx)
+                try:
+                    if groundTruth is True:
+                        plt.scatter(U_init[:,v1-1], U_init[:,v2-1], c=enum, cmap='nipy_spectral', s=20, linewidths=.5, edgecolor='k')
+                    else:
+                        plt.scatter(U_init[:,v1-1], U_init[:,v2-1], c='white', s=20, linewidths=.5, edgecolor='k')
+
+                except:
+                    plt.scatter(0,0)
+                plt.xlabel(r'$PC_{%s}$' % (int(v1)), fontsize=8, labelpad=5)
+                plt.ylabel(r'$PC_{%s}$' % (int(v2)), fontsize=8, labelpad=2.5)
+                plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+                plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0)) 
+                idx+=1
+        plt.tight_layout()
+        plt.show()
     
     # =========================================================================
     # Create array of combinations for indexing 2D subspaces
@@ -110,10 +140,12 @@ def op(pyDir, PD):
     for i in theta_list:
         theta_total = int(float(dim)*(float(dim)-1.)/2.)
         thetas = np.zeros(shape=(theta_total,1), dtype=float)
-        # genNdRotations.py is set up s.t. correct rotation submatrix has index dim-1:
+        # genNdRotations.py is set up s.t. required rotation submatrix has index dim-1:
         thetas[dim-1] = i*np.pi/180
         R = Generate_Nd_Rot.genNdRotations(dim, thetas)
-        U_rot = np.matmul(U_init, R)
+        U_rot = np.matmul(R, U_init.T)
+        U_rot = U_rot.T
+        
         idx = 0
         for v1,v2 in comboList:
             proj = np.vstack((U_rot[:,v1-1], U_rot[:,v2-1])).T
@@ -122,14 +154,53 @@ def op(pyDir, PD):
             nonZ[:,idx][step_i] = nonzero
             idx+=1
         step_i += 1
-    
+        
+    # Perform a local fit on top of each each global fit; 50 chosen as small perturbation range
+    wiggleSpan = 50
+    wiggleRoomLow = np.argmin(nonZ[:,0])-wiggleSpan/2
+    wiggleRoomHigh = np.argmin(nonZ[:,0])+wiggleSpan/2
+    wiggleRange = np.zeros(shape=(wiggleSpan), dtype=int)
+   
+    if wiggleRoomLow >= 0 and wiggleRoomHigh <= 359:
+        cutoff = 'None'
+        wiggleRange[0:wiggleSpan] = np.arange(wiggleRoomLow, wiggleRoomHigh) 
+    elif wiggleRoomLow < 0:
+        cutoff = 'Low'
+        wiggleRange[0:-1*wiggleRoomLow] = np.arange(360+wiggleRoomLow,360)
+        wiggleRange[-1*wiggleRoomLow:wiggleSpan] = np.arange(0,wiggleRoomHigh)
+        wiggleRoomLow = 360+wiggleRoomLow
+    elif wiggleRoomHigh > 359:
+        print('Unexpected input, read comment.') #this shouldn't be a scenario; if it emerges, add code similarly as seen above
+        
+    wiggleAngles = []
     if 1: #plot 'theta vs. nonzeros' for set of 2D subspaces and save figure to file
         fig1 = plt.figure(constrained_layout=False) #prepare figure, part 1
         spec1 = gridspec.GridSpec(ncols=dim-1, nrows=dim-1, figure=fig1) #prepare figure, part 2
-        idx=0
+        idx = 0
         for v1,v2 in comboList:
-            f1_ax1 = fig1.add_subplot(spec1[int(v1-1), int(v2-2)])            
+            fig1.add_subplot(spec1[int(v1-1), int(v2-2)])            
             plt.plot(nonZ[:,idx], linewidth=1)
+            plt.axvline(np.argmin(nonZ[:,0]), c='orange', linewidth=.5) #optimal angle as defined relative to most significant CM
+            plt.axvline(wiggleRoomLow, c='b', linewidth=.5)
+            plt.axvline(wiggleRoomHigh, c='b', linewidth=.5)
+            
+            perturbRange = nonZ[wiggleRange, idx]
+            try:   
+                val, idxx = min((val, idx) for (idx, val) in enumerate(perturbRange))
+            except:
+                idxx = np.argmin(nonZ[:,0])
+            
+            if cutoff == 'None':
+                wiggleAngles.append(idxx+wiggleRoomLow)
+                plt.axvline(idxx+wiggleRoomLow, c='r', linewidth=.5)
+            elif cutoff == 'Low':
+                if (wiggleRoomLow+idxx) > 359:
+                    wiggleAngles.append(wiggleRoomLow+idxx-360)
+                    plt.axvline(wiggleRoomLow+idxx-360, c='r', linewidth=.5)
+                else:
+                    wiggleAngles.append(wiggleRoomLow+idxx)
+                    plt.axvline(wiggleRoomLow+idxx, c='r', linewidth=.5)
+
             plt.title('Psi %s, Psi %s' % (v1,v2), fontsize=9)
             plt.gca().tick_params(axis='both', which='major', labelsize=7)
             plt.gca().tick_params(axis='both', which='minor', labelsize=7)        
@@ -145,7 +216,7 @@ def op(pyDir, PD):
     CM_idx = [] #list of single indices for above tuples
     for i in range(len(comboList)):
         for j in range(len(comboList)):
-            if i < j and i != j: #no repeat or nontrivial combinations
+            if i < j and i != j: #no repeat nor trivial combinations
                 if np.std(nonZ[:,i]) > 1e-3 and np.std(np.roll(nonZ[:,j], 90)) > 1e-3:            
                     corr = np.corrcoef(nonZ[:,i], np.roll(nonZ[:,j], 90))[0,1]
                 else:
@@ -153,19 +224,24 @@ def op(pyDir, PD):
                 #print(comboList[i], comboList[j], corr)
                 if corr > .9999: #find all perfectly correlated pairs
                     #print('Match found:',comboList[i], comboList[j], corr)
-                    CM_list.append([comboList[i]]) #only need to keep track of one (i.e., not comboList[j]])
+                    CM_list.append([comboList[i]])
+                    CM_list.append([comboList[j]])
                     CM_idx.append(i)
-                    #CM_idx.append(j)
-    
-    # For heightened precision, keep track of optimal angle for each possible CM:
+                    CM_idx.append(j)
+                                                                    
     CM_info = np.ndarray(shape=(len(CM_idx),5))
     for i in range(len(CM_list)): 
         CM_info[i,0] = CM_idx[i] #1st column: 2D subspace location
-        CM_info[i,1] = np.argmin(nonZ[:,CM_idx[i]]) #2nd column: optimal theta
+        # the below two lines represent different strategies for achieving the optimal angle...
+        # ...for each 2D subspace. The 2nd strategy is the most accurate.
+        if 0: #global fit based off of first eigenfunction
+            CM_info[i,1] = np.argmin(nonZ[:,CM_idx[0]]) #optimal angle of most prominent CM defines all others
+        else: #global fit (as above), followed by subsequent local fit
+            CM_info[i,1] = wiggleAngles[CM_idx[i]]
         #note: 3rd column is supplied in next step (coefficient of determination, R^2)
         CM_info[i,3] = CM_list[i][0][0] #keep 2D subspace's 1st eigenvector index
         CM_info[i,4] = CM_list[i][0][1] #keep 2D subspace's 2nd eigenvector index
-        
+                
     # =========================================================================
     # Rank each potential 2D subspace via parabola fitting
     # =========================================================================  
@@ -179,9 +255,10 @@ def op(pyDir, PD):
         v2 = V[0][1]-1
     
         thetas = np.zeros(shape=(theta_total,1), dtype=float)
-        thetas[dim-1] = CM_info[idx,1]*(np.pi/180) #using lowest-indexed eigenvector, but any row will do
+        thetas[dim-1] = CM_info[idx,1]*(np.pi/180)
         R = Generate_Nd_Rot.genNdRotations(dim, thetas)
-        U_rot = np.matmul(U_init, R)
+        U_rot = np.matmul(R, U_init.T)
+        U_rot = U_rot.T
     
         guess_a = 1.
         guess_b = 0.5
@@ -207,9 +284,13 @@ def op(pyDir, PD):
         
         if 0: #plot each 2D subspace's fit with corresponding R^2 value:
             lw = 1.5
+            plt.clf()
             plt.subplot(1,1,1)
             plt.title(r'R$^{2}$=%.3f' % R2, fontsize=12)
-            plt.scatter(U_rot[:,v1], U_rot[:,v2], s=1, c=enum, cmap=cmap)
+            if groundTruth is True:
+                plt.scatter(U_rot[:,v1], U_rot[:,v2], s=1, c=enum, cmap='nipy_spectral')
+            else:
+                plt.scatter(U_rot[:,v1], U_rot[:,v2], c='white', s=20, linewidths=.5, edgecolor='k')
             plt.plot(xlist1, ParabolicFit(xlist1, *coeffs[0]),c='k',linewidth=lw)
             plt.xlabel(r'v$_%s$' % (int(v1)+1), labelpad=10)
             plt.ylabel(r'v$_%s$' % (int(v2)+1), labelpad=0)
@@ -220,9 +301,9 @@ def op(pyDir, PD):
     # Order potential CM subspaces by decreasing R^2 value:
     CM_info = CM_info[CM_info[:,2].argsort()][::-1]
     
-    # =============================================================================
+    # =========================================================================
     # Use optimal theta to rotate N-dim manifold into place and save PD info to file
-    # =============================================================================
+    # =========================================================================
     cmap = 'nipy_spectral'
     s = 20
     lw = .5
@@ -233,17 +314,29 @@ def op(pyDir, PD):
         thetas = np.zeros(shape=(theta_total,1), dtype=float)
         thetas[dim-1] = CM_info[i,1]*(np.pi/180)
         R = Generate_Nd_Rot.genNdRotations(dim, thetas)
-        U_rot = np.matmul(U_init, R)
+        U_rot = np.matmul(R, U_init.T)
+        U_rot = U_rot.T
         # plot final data in descending order of CM probability:
-        plt.subplot(1,np.shape(CM_info)[0],i+1)
-        plt.scatter(U_rot[:,int(CM_info[i,3]-1)], U_rot[:,int(CM_info[i,4]-1)], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
-        plt.xlabel(r'$v_{%s}$' % int(CM_info[i,3]), fontsize=8, labelpad=5, color='k')
-        plt.ylabel(r'$v_{%s}$' % int(CM_info[i,4]), fontsize=8, labelpad=5, color='k')
+        plt.subplot(2,np.shape(CM_info)[0]/2,i+1)
+        if groundTruth is True:
+            plt.scatter(U_rot[:,int(CM_info[i,3]-1)], U_rot[:,int(CM_info[i,4]-1)], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
+        else:
+            plt.scatter(U_rot[:,int(CM_info[i,3]-1)], U_rot[:,int(CM_info[i,4]-1)], c='white', s=s, linewidths=lw, edgecolor='k')
+        plt.xlabel(r'$v_{%s}$' % int(CM_info[i,3]), fontsize=12, labelpad=5, color='k')
+        plt.ylabel(r'$v_{%s}$' % int(CM_info[i,4]), fontsize=12, labelpad=0, color='k')
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
         plt.axis('scaled')
         plt.xlim(-1.1,1.1)
         plt.ylim(-1.1,1.1)
+        if 1:
+            frame = plt.gca()
+            frame.axes.xaxis.set_ticklabels([])
+            frame.axes.yaxis.set_ticklabels([])
+            plt.gca().set_xticks([])
+            plt.xticks([])
+            plt.gca().set_yticks([])
+            plt.yticks([])
     
     plt.tight_layout()
     fig = plt.gcf()
@@ -252,7 +345,7 @@ def op(pyDir, PD):
       
     np.save(os.path.join(pdDir, 'PD%s_CM_Rot.npy' % PD), CM_info)
     # In the above output file, the `CM_info` rows are each viable 2D subspace, with columns: 
-    ##   1. 2D subspace 1d-index (zero-indexing)
+    ##   1. 2D subspace 1d-index (ordered as described above; zero-indexing)
     ##   2. 2D subspace optimal theta
     ##   3. 2D subspace coefficient of correlation (R^2) from parabola fit
     ##   4. 2D subspace 1st eigenvector (one-indexing)
