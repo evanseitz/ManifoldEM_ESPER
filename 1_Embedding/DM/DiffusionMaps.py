@@ -34,6 +34,7 @@ def op(pyDir, PD):
     if not os.path.exists(outDir):
         os.mkdir(outDir)
     Dist = np.load(os.path.join(dataDir, 'PD%s_tau5_SNR_dist.npy' % PD))
+    #Dist = np.load(os.path.join(dataDir, 'PD001_tau1_dist.npy'))
 
     # =========================================================================
     # Distances matrix analysis
