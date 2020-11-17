@@ -30,13 +30,16 @@ if 1: #Times font for all figures
 # Import data into arrays
 # =============================================================================
 PD = '005'
+
 #Dist = np.load(os.path.join(distDir, 'PD%s_tau1_dist.npy' % PD)) #distance files
-Dist = np.load(os.path.join(distDir, 'PD%s_tau5_SNR_dist.npy' % PD)) #distance files
-m = np.shape(Dist)[0]  
 #U = np.load(os.path.join(maniDir,'PD%s_tau1_vec.npy' % PD)) #eigenvectors
 #sdiag = np.load(os.path.join(maniDir,'PD%s_tau1_val.npy' % PD)) #eigenvalues
+
+Dist = np.load(os.path.join(distDir, 'PD%s_tau5_SNR_dist.npy' % PD)) #distance files
 U = np.load(os.path.join(maniDir,'PD%s_tau5_SNR_vec.npy' % PD)) #eigenvectors
 sdiag = np.load(os.path.join(maniDir,'PD%s_tau5_SNR_val.npy' % PD)) #eigenvalues
+
+m = np.shape(Dist)[0]
 
 # =============================================================================
 # Analysis of embedding
@@ -53,7 +56,7 @@ if 0: #plot 2d diffusion map
     enum = np.arange(1,m+1)
     if 0: #annotate points in plot with indices of each state
         for i, txt in enumerate(enum):
-            plt.annotate(txt, (U[i,v1]*sdiag[v1], U[i,v2]*sdiag[v2]), fontsize=12, zorder=1, color='gray')
+            plt.annotate(txt, (U[i,v1], U[i,v2]), fontsize=12, zorder=1, color='gray')
     plt.title(r'2D Embedding')
     plt.xlabel(r'$\psi_1$')
     plt.ylabel(r'$\psi_2$')
