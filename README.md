@@ -11,7 +11,7 @@ We have additionally supplied a sample of pristine data that can be experimented
 
 Please note that additional steps in coding are still needed to make this workflow accessible to experimentally-obtained data. Much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite: (TBD link)... with our workflow branching off from the current ManifoldEM logic permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed.
 
-### Instructions:
+## Instructions:
 
 ### Environment:
 First, install Anaconda from https://docs.anaconda.com/anaconda/install. Additionally, LaTex can be installed, e.g. via TeX Live (tug.org/texlive)... if not, syntax for figure generation in these scripts will need to be individually altered. Next, with Anaconda sourced, create a new Aniconda environment:
@@ -20,18 +20,18 @@ First, install Anaconda from https://docs.anaconda.com/anaconda/install. Additio
 
 Next, activate this environment via `condo activate Manifold`, and install the following packages:
 
-`pip install numpy`
-`pip install matplotlib`
-`pip install scipy`
-`pip3 install -U scikit-learn scipy matplotlib`
-`pip install mrcfile`
-`pip install imageio`
-`conda config --add channels conda-forge`
-`conda config --set channel_priority strict`
-`conda install alphashape`
-`conda install -c conda-forge descartes`
-`pip install qiskit` #installs sympy
-`pip install latex` #if texlive installed above
+- `pip install numpy`
+- `pip install matplotlib`
+- `pip install scipy`
+- `pip3 install -U scikit-learn scipy matplotlib`
+- `pip install mrcfile`
+- `pip install imageio`
+- `conda config --add channels conda-forge`
+- `conda config --set channel_priority strict`
+- `conda install alphashape`
+- `conda install -c conda-forge descartes`
+- `pip install qiskit` #installs sympy
+- `pip install latex` #if texlive installed above
 
 Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command: `conda activate Manifold`
 
