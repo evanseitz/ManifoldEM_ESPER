@@ -14,7 +14,7 @@ Please note that additional steps in coding are still needed to make this workfl
 ## Instructions:
 
 ### Environment:
-First, install Anaconda from https://docs.anaconda.com/anaconda/install. Additionally, LaTex can be installed, e.g. via TeX Live (tug.org/texlive)... if not, syntax for figure generation in these scripts will need to be individually altered. Next, with Anaconda sourced, create a new Aniconda environment:
+First, install Anaconda from https://docs.anaconda.com/anaconda/install. Additionally, LaTex can be installed, e.g. via [TeX Live](https://tug.org/texlive)... if not, syntax for figure generation in these scripts will need to be individually altered. Next, with Anaconda sourced, create a new Aniconda environment:
 
 `condo create -n Manifold python=3`
 
