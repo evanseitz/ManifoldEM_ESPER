@@ -309,15 +309,16 @@ def op(pyDir, PD):
                 NumberOfZeros = 100-(np.count_nonzero(H)/(float(bins**2)))*100 #as percentage of total bins
                 meas[step_i] = NumberOfZeros
                 if 0: #for viewing intermediate results only
-                    if 0: #2D histogram 
-                        plt.imshow(H.T)
-                    else:
-                        plt.scatter(U_rot[:,v1], U_rot[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k', zorder=0)
-                    plt.title('%.3f, %.3f' % (NumberOfZeros, i))
-                    #fig = plt.gcf()
-                    #fig.savefig(os.path.join(pdDir,'temp_%s_%s.png' % (Rij, step_i)))
-                    plt.show()
-                    plt.clf()        
+                    if v1 == 1 and v2 == 4:
+                        if 0: #2D histogram 
+                            plt.imshow(H.T)
+                        else:
+                            plt.scatter(U_rot[:,v1], U_rot[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k', zorder=0)
+                        plt.title('%.3f, %.3f' % (NumberOfZeros, i))
+                        fig = plt.gcf()
+                        fig.savefig(os.path.join(pdDir,'temp_%s_%s.png' % (Rij, step_i)))
+                        #plt.show()
+                        plt.clf()        
                 step_i += 1 
 
             meas_maxIdx = np.argmax(meas)

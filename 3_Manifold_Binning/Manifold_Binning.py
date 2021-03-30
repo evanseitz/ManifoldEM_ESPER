@@ -37,11 +37,11 @@ if 1: #render with LaTeX font for figures
 
 # =============================================================================
 # Least squares fit each 2D subspace per CM, project data points onto fit...
-# ...stratify data points into bins (occupancy map), and save outputs
+# ...stratify data points into bins (occupancy map), and save outputs:
 # =============================================================================
 # SETUP: First, make sure all user parameters are correct for your dataset...
 #   ...below in the initial sections (e.g., 'PCA' for embedding type...
-#   ...and correct input file names via directories, if altered)
+#   ...and correct input file names via directories for image stacks)
 # RUNNING: To run a series of PDs at once: edit 'totalPDs' parameter below...
 #   ...for the total number of PDs requested. As well, the number of CMs...
 #   ...to process can also be altered at the top of the subsequent loop.
@@ -51,13 +51,27 @@ if 1: #render with LaTeX font for figures
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
 
+
+# =============================================================================
+# User parameters:
+# =============================================================================
+groundTruth = True #use GT indices for visualizations; see '0_Data_Inputs/GroundTruth_Indices'
+PCA = False #specify if manifolds from PCA or DM folder {if False, DM is True}
+CTF = True #if CTF protocols previously used in DM
 totalPDs = 126
-PCA = True #specify if manifolds from PCA or DM folder {if False, DM is True}
-groundTruth = True #optional, for comparing outputs with ground-truth knowledge (if available)
+totalCMs = 2 #total number of CMs to consider via leading results in previous algorithm
 Bins = 20 #number of bins for each CM (i.e., energy landscape bins); **even numbers only**
 printFigs = True #save figures of outputs throughout framework to file
 
-for PD in [2]:#range(1,totalPDs+1):
+if groundTruth is True:
+    CM1_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM1_Indices.npy'), allow_pickle=True) #view in reference frame of CM1
+    CM2_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM2_Indices.npy'), allow_pickle=True) #view in reference frame of CM2
+
+
+# =============================================================================
+# Main loop:
+# =============================================================================
+for PD in range(1,totalPDs+1):
     PD = "{0:0=3d}".format(PD)
     print('')
     print('PD:',PD)
@@ -65,38 +79,28 @@ for PD in [2]:#range(1,totalPDs+1):
     # =========================================================================
     # Import PD manifold:
     # =========================================================================
-    #if PCA is True: #change end of file path to match name of your PCA outputs
-    if 0:
-        maniPath = os.path.join(parDir, '1_Embedding/PCA/Data_Manifolds_126_tau10_GC3/PD%s_tau10_vec.npy' % PD)
-        print('Manifold Shape:', np.shape(np.load(maniPath)))
-        U0 = np.load(maniPath) #eigenvectors
-    else:
-        projName = 'PD_002'
-        dmDir = os.path.join(parDir, 'manifoldEM_py3_1D-master/outputs_%s/diff_maps' % (projName))
-        fname = open(os.path.join(dmDir, 'gC_trimmed_psi_prD_%s' % (0)), 'rb')
-        data = pickle.load(fname)
-        U0 = data['psi']
+    #maniPath = os.path.join(parDir, '1_Embedding/PCA/Data_Manifolds_126/PD%s_SNRpt1_tau5_vec.npy' % PD)
+    maniPath = os.path.join(parDir, '1_Embedding/DM/Data_Manifolds/PD_%s_vec.npy' % PD)
+    print('Manifold Shape:', np.shape(np.load(maniPath)))
+    U0 = np.load(maniPath) #eigenvectors
     
     # =========================================================================
     # Import PD image stack:
     # =========================================================================
     stackDir = os.path.join(parDir, '0_Data_Inputs')
-
-    if 0:
-        stackPath = os.path.join(parDir, '0_Data_Inputs_126gc/stacks_tau10_GC3/PD%s_SNR_tau10_stack.mrcs' % PD)
-    else:
-        stackPath = os.path.join(stackDir, 'Hsp2D_5k15k_PD_%s_CTFcorr.mrcs' % PD)
-    
+    if CTF is True:
+        stackPath = os.path.join(stackDir, 'CTF5k15k_SNRpt1_ELS_2D/Hsp2D_5k15k_PD_%s_filtered.mrcs' % PD) #note use of '_filtered' keyword
+    elif CTF is False:
+        stackPath = os.path.join(stackDir, 'CTF5k15k_SNRpt1_ELS_2D/Hsp2D_5k15k_PD_%s.mrcs' % PD)
     init_stack = mrcfile.mmap(stackPath)
     SS, box, box = init_stack.data.shape #'SS': total number of images; 'box': image dimension
     
     # =========================================================================
     # Import PD rotation info:
     # =========================================================================
-    #ZULU: check if DM paths needed?
-    rotMatrices = os.path.join(parDir, '2_Manifold_Rotations/Data_Rotations_PD_%s/PD%s/PD%s_RotMatrices.npy' % (PD,PD,PD))
-    rotEigenfunctions = os.path.join(parDir, '2_Manifold_Rotations/Data_Rotations_PD_%s/PD%s/PD%s_RotEigenfunctions.npy' % (PD,PD,PD))
-    rotParameters = os.path.join(parDir, '2_Manifold_Rotations/Data_Rotations_PD_%s/PD%s/PD%s_RotParameters.npy' % (PD,PD,PD))
+    rotMatrices = os.path.join(parDir, '2_Manifold_Rotations/Data_Rotations/PD%s/PD%s_RotMatrices.npy' % (PD,PD))
+    rotEigenfunctions = os.path.join(parDir, '2_Manifold_Rotations/Data_Rotations/PD%s/PD%s_RotEigenfunctions.npy' % (PD,PD))
+    rotParameters = os.path.join(parDir, '2_Manifold_Rotations/Data_Rotations/PD%s/PD%s_RotParameters.npy' % (PD,PD))
     rotMatrix = np.load(rotMatrices)
     rotEigs = np.load(rotEigenfunctions)
     rotParams = np.load(rotParameters)
@@ -121,9 +125,8 @@ for PD in [2]:#range(1,totalPDs+1):
         return d
     
     U = normalize(U0) #rescale manifold between -1 and +1 (all axes)
-
     if PCA is True:
-        U_init = U[:,0:dim] #manifold subspace (for 'dim' dimensions)
+        U_init = U[:,0:dim]
     else: #if DM, don't use steady-state eigenvector (v_0)
         U_init = U[:,1:dim+1]
         
@@ -155,7 +158,7 @@ for PD in [2]:#range(1,totalPDs+1):
     # =========================================================================
     # MAIN LOOP: fit each manifold, project points onto fits, bin, and save
     # =========================================================================    
-    for CM in [0,1]:#or range(0,6)... depending on number chosen in previous step ('2_Manifold_Rotations')
+    for CM in range(0,totalCMs): #[0,1]
         print('CM:', (CM+1))
         figIdx = 1
         # Create directory for each CM:
@@ -173,9 +176,7 @@ for PD in [2]:#range(1,totalPDs+1):
                 
         v1 = v1_list[CM]-1 #2D subspace's 1st eigenvector
         v2 = v2_list[CM]-1 #2D subspace's 2nd eigenvector
-        
-        #ZULU check above is correct for DM and PCA
-        
+                
         # =====================================================================
         # Use previously-defined optimal theta to rotate high-dim manifold into place
         # =====================================================================
@@ -225,7 +226,8 @@ for PD in [2]:#range(1,totalPDs+1):
         else:
             # =================================================================
             # General Conic Fit and Optimal In-Plane Rotation:
-            # Note: no parabolic restraints; observed to be more robust
+            # Note: no parabolic restraints; observed to be more robust...
+            # ...and essential if CTF present.
             # =================================================================
             cF, cF0, Theta, R2 = ConicFit_Parabola.fit2(U_rot_Nd_in, v1, v2)
             # Define orientation of conic (facing up or down):
@@ -317,8 +319,6 @@ for PD in [2]:#range(1,totalPDs+1):
             print('Fitting Error: parabolic fit score insufficient.')
             continue
         
-        #break
-
         # =====================================================================
         # Arccos transformation:        
         # =====================================================================
@@ -424,9 +424,9 @@ for PD in [2]:#range(1,totalPDs+1):
             ss = len(split_idx) #new image count
             U_split = U_arc_2d[split_idx,:]
 
-            # ==============================================================
+            # =================================================================
             # Temporarily remove outliers for better spline fit and Alpha Shape:
-            # =============================================================
+            # =================================================================
             tree = spatial.KDTree(U_split[:,[0,1]])
             final_tree = tree.query_ball_tree(tree, r=.06, p=2.0, eps=0) #r: max radius
             inliers = []
@@ -520,8 +520,7 @@ for PD in [2]:#range(1,totalPDs+1):
                 base_alphaX, base_alphaY = boundary_both.xy
             
             base_alphaY = np.array(base_alphaY)[0]
-            
-            base_alphaY_new = (np.arccos(0) + base_alphaY)/2.
+            base_alphaY_new = (np.arccos(0) + base_alphaY)/2. #needed if 'CTF' is True
             
             # Given boundary points, crop previous spline fit:         
             fit2_x = []
@@ -538,10 +537,7 @@ for PD in [2]:#range(1,totalPDs+1):
                         fit2_y.append(y)
                 y_idx += 1
                 
-            #re-order x-values and y-values in sequence of ascending x-values
-            '''fit2 = sorted(zip(fit2_x, fit2_y), key=operator.itemgetter(0))
-            fit2_x, fit2_y = zip(*fit2)'''
-            #if side == 0:
+            # Re-order x-values and y-values in sequence:
             if fit2_x[0] > fit2_x[-1]:
                 fit2_x = fit2_x[::-1]
                 fit2_y = fit2_y[::-1]            
@@ -569,7 +565,7 @@ for PD in [2]:#range(1,totalPDs+1):
                     lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY+3)])
 
             # =================================================================
-            # Dilate the spline such that it takes up half of the area...
+            # Optional: Dilate the spline such that it takes up half of the area...
             # ...of the alpha-shape, and then merge that dilated spline polygon...
             # ...with the alpha-shape polygon. This step acts as a safeguard for...
             # ...alpha-shapes that tend to cut into the point-cloud irregularly...
@@ -619,7 +615,10 @@ for PD in [2]:#range(1,totalPDs+1):
                 plt.scatter(*zip(*points_in), s=2, zorder=1)
                 plt.scatter(*zip(*points_all), s=1, c='lightgray', zorder=-1)
                 plt.plot(fit2_x, fit2_y, c='r', linewidth=2, zorder=1, alpha=.5)
-                plt.scatter(center_fitX, base_alphaY_new, c='k', s=s)
+                if CTF is True:
+                    plt.scatter(center_fitX, base_alphaY_new, c='k', s=s)
+                elif CTF is False:
+                    plt.scatter(center_fitX, base_alphaY, c='k', s=s)
                 plt.axvline(x=center_fitX, linewidth=1, c='k', zorder=1)
                 plt.axhline(y=base_alphaY, linewidth=1, c='k', zorder=1)
                 plt.xlabel(r'$\Phi_{%s}$' % (int(v1)+1), labelpad=5, fontsize=14)
@@ -659,7 +658,10 @@ for PD in [2]:#range(1,totalPDs+1):
                 y0 = 0
                 xR = x0*np.cos(Ang) - y0*np.sin(Ang)
                 yR = x0*np.sin(Ang) + y0*np.cos(Ang)
-                lineRay = LineString([(center_fitX, base_alphaY_new), (xR + center_fitX, yR + base_alphaY_new)]) #translate and rotate line
+                if CTF is True:
+                    lineRay = LineString([(center_fitX, base_alphaY_new), (xR + center_fitX, yR + base_alphaY_new)]) #translate and rotate line
+                else:
+                    lineRay = LineString([(center_fitX, base_alphaY), (xR + center_fitX, yR + base_alphaY)]) #translate and rotate line
                 try:
                     polySplit = split(polygonMain, lineRay) #subdivide polygon with an intersecting line
                     polySegs = [] #for possibility of more than two segments generated during split
@@ -680,7 +682,10 @@ for PD in [2]:#range(1,totalPDs+1):
                     lineCrosses.append(linesCross)
                     if 0: #sanity check: view rotations and corresponding subdivisions
                         plt.clf()
-                        plt.scatter(center_fitX, base_alphaY_new, c='magenta', zorder=3)
+                        if CTF is True:
+                            plt.scatter(center_fitX, base_alphaY_new, c='magenta', zorder=3)
+                        elif CTF is False:
+                            plt.scatter(center_fitX, base_alphaY, c='magenta', zorder=3)
                         plt.gca().add_patch(PolygonPatch(polySplit1, alpha=0.2, color='red', label=('Area: %.4f' % polySplit1.area)))
                         plt.gca().add_patch(PolygonPatch(polySplit2, alpha=0.2, color='blue', label=('Area: %.4f' % polySplit2.area)))
                         LRx, LRy = lineRay.xy
@@ -702,7 +707,7 @@ for PD in [2]:#range(1,totalPDs+1):
                     lineCrosses.append(99)
                 angIdx += 1
             # =================================================================
-            # ^note for above^: the assignment of which segmented polygon "is which" sometimes...
+            # Note for above: the assignment of which segmented polygon "is which" sometimes...
             # flips, such that the ratio is non-monotonic. The below code adjusts for this...
             # by always using the 'polyAreaRatio' that creates a monotonically increasing sequence.
             # =================================================================
@@ -876,9 +881,12 @@ for PD in [2]:#range(1,totalPDs+1):
             # Order and bin images along spline:        
             # =================================================================
             print('Performing ray projections (%s/2)...' % (side+1))
-            fitList3 = zip(fit2_x, fit2_y) #each x-fit and y-fit coord, ordered along the curve 
-            imageIdxSort3 = reorder2(U_arc_2d, fitList3, split_idx, center_fitX, base_alphaY_new, side, face) #project and order image-pts onto spline via rays
-            # ^note for above^: column 1 = image index; column 2 = fit index (sorted from low to high)
+            fitList3 = zip(fit2_x, fit2_y) #each x-fit and y-fit coord, ordered along the curve
+            if CTF is True:
+                imageIdxSort3 = reorder2(U_arc_2d, fitList3, split_idx, center_fitX, base_alphaY_new, side, face) #project and order image-pts onto spline via rays
+            elif CTF is False:
+                imageIdxSort3 = reorder2(U_arc_2d, fitList3, split_idx, center_fitX, base_alphaY, side, face) #project and order image-pts onto spline via rays
+            # Note for above: column 1 = image index; column 2 = fit index (sorted from low to high)
 
             if side == 1:
                 binEdgesIdxs = binEdgesIdxs[::-1]
@@ -1006,111 +1014,37 @@ for PD in [2]:#range(1,totalPDs+1):
         # Save current CM's sequence of states as gif:
         # =====================================================================
         #finalStackBin_uint8 = ((finalStackBin - finalStackBin.min()) * (1/(finalStackBin.max() - finalStackBin.min()) * 255)).astype('uint8')
-        imageio.mimsave(os.path.join(outDir,'Fig_%s_2Dmovie.gif' % figIdx), finalStackBin)#_uint8) #uint8 conversion creates "blinking" gifs; just silence warning.
+        imageio.mimsave(os.path.join(outDir,'Fig_%s_2Dmovie.gif' % figIdx), finalStackBin)#_uint8) #Python3 uint8 conversion creates "blinking" gifs; just silence warning.
         figIdx += 1
         
         # =====================================================================
         # Check ground truth positions of states on parabola and sinusoid:
-        # =====================================================================  
-        '''if groundTruth is True: #check ground-truth bins
-            states_gt = 20
-            tau = 10
-            ss_gt = 4000
-            CM_idx = np.ndarray(shape=(states_gt, states_gt*tau), dtype=int)  
-            if CM == 0:
-                # =============================================================
-                # Generate CM1 ground-truth indexing:
-                # =============================================================
-                idx=0
-                shift=0
-                Idx=0
-                for i in range(ss_gt):
-                    if Idx*tau <= i < (Idx+states_gt)*tau:
-                        CM_idx[shift, idx-Idx*tau] = i
-                        idx+=1
-                        if idx%(states_gt*tau) == 0:
-                            Idx+=states_gt
-                            shift+=1
-            else:
-                # =============================================================
-                # Generate CM2 ground-truth indexing:
-                # =============================================================          
-                binsActual = []
-                Idx = 0
-                for s in range(0,states_gt):
-                    state_list = []
-                    for r in range(0,states_gt):
-                        state_list.append(np.arange(Idx,Idx+tau))
-                        Idx+=(states_gt*tau)
-                    binsActual.append([item for sublist in state_list for item in sublist])
-                    Idx-=(ss_gt-tau)
+        # =====================================================================                
+        if groundTruth is True: #check ground-truth bins    
+            for F in [1,2]:
+                if F == 1:
+                    CM_idx = CM1_idx
+                else:
+                    CM_idx = CM2_idx
+                plt.subplot(1,2,1)                          
+                color=iter(cm.tab20(np.linspace(1, 0, np.shape(CM_idx)[0])))
+                for b in range(np.shape(CM_idx)[0]):
+                    c=next(color)
+                    plt.scatter(U_arc_2d[:,0][CM_idx[b]], U_arc_2d[:,1][CM_idx[b]], color=c, s=s, edgecolor='k', linewidths=.1, zorder=1) #parabola
+                plt.title('Ground Truth Bins')
+                plt.axis('scaled')
                 
-                for i in range(states_gt):
-                    for j in range(states_gt*tau):
-                        CM_idx[i,j] = binsActual[i][j]'''
-                        
-                        
-        if groundTruth is True: #check ground-truth bins
-            occPath = os.path.join(stackDir, 'Occ2D_4k.npy')
-            occFile = np.load(occPath)
-            occFile.astype(int)
-            
-            states_gt = 20
-            ss_gt = 4000
-            occ = []
-            for i in range(1, states_gt+1): #[1,20]
-                for j in range(1, states_gt+1): #[1,20]
-                    occ.append(int(occFile[j-1][i-1]))
-                    
-            CM1_sums = np.sum(occFile, axis=0)
-            CM2_sums = np.sum(occFile, axis=1)
-            
-            # Check ground-truth bins:
-            step = 0
-            CM_idx = []
-            for i in range(states_gt):
-                CM_idx.append([])
-                
-            if CM == 0: #CM1 indexing
-                for i in range(states_gt):
-                    for j in range(int(CM1_sums[i])):
-                        CM_idx[i].append(step+int(j))
-                    step += int(CM1_sums[i])
-                    
-            else: #CM2 indexing
-                for i in range(states_gt):
-                    if i > 0:
-                        step = CM_idx[i-1][int(occFile[i-1,0]-1)]
-                    for j in range(states_gt):
-                        for k in range(int(occFile[i,j])):
-                            step+=1
-                            CM_idx[i].append(step)
-                        if j < 19:
-                            step += int((np.sum(occFile[:,:], axis=0)[j]) - np.sum(occFile[:i+1,:], axis=0)[j] + np.sum(occFile[:i,:], axis=0)[j+1])
-                #zero-indexing:
-                for i in range(states_gt):
-                    for j in range(len(CM_idx[i])):
-                        CM_idx[i][j] -= 1
-              
-            plt.subplot(1,2,1)                          
-            color=iter(cm.tab20(np.linspace(1, 0, states_gt)))
-            for b in reversed(range(states_gt)):
-                c=next(color)
-                plt.scatter(U_arc_2d[:,0][CM_idx[b]], U_arc_2d[:,1][CM_idx[b]], color=c, s=s, edgecolor='k', linewidths=.1, zorder=1) #parabola
-            plt.title('Ground Truth Bins')
-            plt.axis('scaled')
-            
-            plt.subplot(1,2,2)                          
-            color=iter(cm.tab20(np.linspace(0, 1, states_gt)))
-            for b in range(states_gt):
-                c=next(color)
-                plt.scatter(U_arc_2d[:,0][finalImgIdxs[b]], U_arc_2d[:,1][finalImgIdxs[b]], color=c, s=s, edgecolor='k', linewidths=.1, zorder=1) #parabola
-            plt.title('Output Bins')
-            plt.axis('scaled')
-            fig = plt.gcf()
-            fig.savefig(os.path.join(outDir,'Fig_%s_GroundTruth.png' % figIdx), dpi=200)
-            figIdx += 1
-            #plt.show()
-            plt.clf()
+                plt.subplot(1,2,2)                          
+                color=iter(cm.tab20(np.linspace(0, 1, np.shape(CM_idx)[0])))
+                for b in range(np.shape(CM_idx)[0]):
+                    c=next(color)
+                    plt.scatter(U_arc_2d[:,0][finalImgIdxs[b]], U_arc_2d[:,1][finalImgIdxs[b]], color=c, s=s, edgecolor='k', linewidths=.1, zorder=1) #parabola
+                plt.title('Output Bins')
+                plt.axis('scaled')
+                fig = plt.gcf()
+                fig.savefig(os.path.join(outDir,'Fig_%s_GroundTruth_%s.png' % (figIdx,F)), dpi=200)
+                figIdx += 1
+                #plt.show()
+                plt.clf()
             
     init_stack.close()
