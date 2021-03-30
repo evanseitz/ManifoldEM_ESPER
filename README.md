@@ -1,20 +1,18 @@
 # README
 ## Cryo-EM Heuristic Analysis
 
-This repository contains the software implementation for our paper **Heuristic Analysis of Manifolds from Simulated Cryo-EM Ensemble Data** (Seitz, Schwander, Maji, Acosta-Reyes, Liao, Frank): https://www.biorxiv.org/?TBD?. It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
+This repository contains the software implementation for our paper **Heuristic Analysis of Manifolds from Simulated Cryo-EM Ensemble Data** (Seitz, Schwander, Maji, Acosta-Reyes, Liao, Frank). It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
 
-These algorithms were developed to run our synthetic data, generated as described in the SI. As well, a detailed description is also provided in our previous paper **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank), along with published repository:
+These algorithms were developed to run our synthetic data, generated as described in the SI. Additional information on this protocol can be found in our previous paper: **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank); along with published repository:
 - Paper: https://www.biorxiv.org/content/10.1101/864116v1
 - Repository: https://github.com/evanseitz/cryoEM_synthetic_continua
 
-We have additionally supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the 'Pristine_AddNoiseTau' folder, as well as CTF via scripts in the 'Pristine_AddCtfSNR' folder. (###mention EMPIAR?)
-
-Please note that additional steps in coding are still needed to make this workflow accessible to experimentally-obtained data. Much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite: (TBD link)... with our workflow branching off from the current ManifoldEM logic permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed.
+We have additionally supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the 'Pristine_AddNoiseTau' folder, as well as CTF via scripts in the 'Pristine_AddCtfSNR' folder. Please note that additional steps in coding are required to make this workflow accessible to experimentally-obtained data. Much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite. Here, our workflow branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed.
 
 ## Instructions:
 
 ### Environment:
-First, install Anaconda from https://docs.anaconda.com/anaconda/install. Additionally, LaTex can be installed, e.g. via [TeX Live](https://tug.org/texlive)... if not, syntax for figure generation in these scripts will need to be individually altered. Next, with Anaconda sourced, create a new Aniconda environment:
+First, install [Anaconda](https://docs.anaconda.com/anaconda/install). Additionally, LaTex can be installed, e.g. via [TeX Live](https://tug.org/texlive)... if not, syntax for figure generation in these scripts will need to be individually altered. Next, with Anaconda sourced, create a new Anaconda environment:
 
 `condo create -n Manifold python=3`
 
@@ -40,14 +38,13 @@ When you are done using the environment, always exit via: `conda deactivate`
 ### Additional Software:
 In addition to the Anaconda environment detailed above, the following packages may also prove useful; some of which are required for final steps in this framework.
 - Chimera
-- PyMol
+- PyMOL
 - Phenix
 - EMAN2
 - RELION
 
 ### Attribution:
-If this code is useful in your work, please cite: ###
-
+If this code is useful in your work, please cite: 
 DOI
 
 ### License:
