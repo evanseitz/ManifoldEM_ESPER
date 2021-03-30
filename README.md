@@ -5,8 +5,6 @@ This repository contains the software implementation for our paper **Heuristic A
 
 These algorithms were developed to run our synthetic data, generated as described in the SI. Additional information on this protocol can be found in our [previous paper](https://www.biorxiv.org/content/10.1101/864116v1): **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank); along with detailed code in our corresponding [repository](https://github.com/evanseitz/cryoEM_synthetic_continua).
 
-We have additionally supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the `Pristine_AddNoiseTau` folder, as well as CTF via scripts in the `Pristine_AddCtfSNR` folder. A collection of manifolds are also provided in the `Data_Manifolds_126` folder so that users can jump straight in to experimenting with several of our downstream algorithms. These manifolds have been generated using 126 PDs with two degrees of freedom, and images therein modulated with experimentally-relevant CTF and SNR. Please note that additional alterations to this code will be required to make this workflow fully accessible to experimentally-obtained data. To note, much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite. Here, our workflow branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed.
-
 ## Instructions:
 
 ### Environment:
@@ -41,7 +39,13 @@ In addition to the Anaconda environment detailed above, the following packages m
 - EMAN2
 - RELION
 
-### Attribution:
+### Usage:
+
+We have additionally supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the `Pristine_AddNoiseTau` folder, as well as CTF via scripts in the `Pristine_AddCtfSNR` folder. A collection of manifolds are also provided in the `Data_Manifolds_126` folder so that users can jump straight in to experimenting with several of our downstream algorithms. These manifolds have been generated using 126 PDs with two degrees of freedom, and images therein modulated with experimentally-relevant CTF and SNR. 
+
+Please note that additional alterations to this code will be required to make this workflow fully accessible to experimentally-obtained data. To note, much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite. Here, our workflow branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed.
+
+## Attribution:
 If this code is useful in your work, please cite: 
 DOI
 
