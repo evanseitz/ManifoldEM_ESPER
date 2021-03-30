@@ -4,18 +4,15 @@ from scipy.optimize import OptimizeWarning
 import warnings
 warnings.simplefilter(action='ignore', category=OptimizeWarning)
 
-"""
-%--------------------------------------------------------------------------
-% function ferguson(D,s)
-% D: Distance matrix
-% logEps: Range of values to try
-% Adapted from Chuck, 2011
-%--------------------------------------------------------------------------
-Copyright (c) UWM, Ali Dashti 2016 (original matlab version)
-Copyright (c) Columbia University, Hstau Liao 2018 (python version)
-Copyright (c) Columbia University, Evan Seitz 2019 (modified python version)    
-%
-"""
+# =============================================================================
+# D: Distance matrix
+# logEps: Range of values to try
+# Adapted from Chuck, 2011
+# =============================================================================
+# Copyright (c) UWM, Ali Dashti 2016 (original matlab version)
+# Copyright (c) Columbia University, Hstau Liao 2018 (python version)
+# Copyright (c) Columbia University, Evan Seitz 2019 (modified python version)    
+# =============================================================================
 
 def fun(xx, aa0, aa1, aa2, aa3):
     #aa3: y-value of tanh inflection point
@@ -50,7 +47,7 @@ def op(D,logEps,a0):
     cc = 0
     while (resnorm>100):
         cc += 1
-        popt, pcov = curve_fit(fun, logEps, logSumWij, p0=a0)
+        popt, pcov = curve_fit(fun, logEps, logSumWij, p0=a0)#, maxfev=10000)
         resnorm = sum(np.sqrt(np.fabs(np.diag(pcov))))
         a0 = 1 * (np.random.rand(4, 1) - .5)
         

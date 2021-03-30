@@ -11,17 +11,20 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.pyplot import cm
 
 # =============================================================================
-# Data viewer for PCA manifolds (run via 'python PCA_Viewer.py') 
-# Used for analysis (viewing) manifold characteristics only
+# Data viewer for PCA manifolds (run via 'python PCA_Viewer.py')
+# =============================================================================
+# USAGE: for viewing manifold characteristics only. Manifolds must first be...
+#   ...generated via previous 'PCA.py' workflow. Alter parameters...
+#   ...below to match requested PD and file locations. If using custom synthetic...
+#   ...data, may need to alter colormap indexing to match data construction.
 # =============================================================================
 # Author:    E. Seitz @ Columbia University - Frank Lab - 2020
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
 
 PD = '001' #change PD to view here
-
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
-dataDir = os.path.join(pyDir, 'Data_Manifolds_126')
+dataDir = os.path.join(pyDir, 'Data_Manifolds')
 if 0: #Times font for all figures
     rc('text', usetex=True)
     rc('font', family='serif')
@@ -29,8 +32,8 @@ if 0: #Times font for all figures
 # =============================================================================
 # Import data into arrays
 # =============================================================================
-#E = np.load(os.path.join(dataDir,'PD%s_SS2_SNRpt1_tau5_val.npy' % PD)) #eigenvalues
-Y = np.load(os.path.join(dataDir,'PD%s_SS2_SNRpt1_tau5_vec.npy' % PD)) #eigenvectors
+E = np.load(os.path.join(dataDir,'PD_%s_val.npy' % PD)) #eigenvalues
+Y = np.load(os.path.join(dataDir,'PD_%s_vec.npy' % PD)) #eigenvectors
 m = np.shape(Y)[0] #number of images for colormap (number of initial states*tau)
 
 # =============================================================================
@@ -90,7 +93,7 @@ if 0: #view a single 3D subspace
     ax = fig.gca(projection='3d')
     color=cm.gist_rainbow(np.linspace(0,1,m+1))
     for i,c in zip(range(m),color):
-        ax.scatter(Y[i,0], Y[i,1], Y[i,2], c=c, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
+        ax.scatter(Y[i,0], Y[i,1], Y[i,2], color=c, cmap=cmap, s=s, linewidths=lw, edgecolor='k')
     ax.set_xlabel('$PC_1$')
     ax.set_ylabel('$PC_2$')
     ax.set_zlabel('$PC_3$')

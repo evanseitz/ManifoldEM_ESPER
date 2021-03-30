@@ -25,38 +25,46 @@ if 1: #render with LaTeX font for figures
     rc('text', usetex=True)
     rc('font', family='serif')
 
-totalPDs = 126 #total number of PDs
-PCA = True #specify if manifolds from PCA or DM folder {if False, DM is True}
-CM = 1 #choose which CM distribution to view; e.g., choose {1,2,3}
-radians = False #choose to display angles in radians {True} or degrees {False}
+totalPDs = 40 #total number of PDs
+CM = 0 #change this to match CM of interest (zero indexing)
+dim = 6 #must match 'dim' assignment used in 'Manifold_Binning.py'
+theta_total = int(float(dim)*(float(dim)-1.)/2.)
 
-rotations = []
-for pd in range(1, totalPDs+1):
-    if PCA is True:
-        rotPath = os.path.join(pyDir, 'Data_Rotations_PCA/PD%.03d/PD%.03d_CM_Rot.npy' % (pd,pd))
-    else:
-        rotPath = os.path.join(pyDir, 'Data_Rotations_DM/PD%.03d/PD%.03d_CM_Rot.npy' % (pd,pd))
-    rotInfo = np.load(rotPath) #load in rotations to view distribution of angles for all PDs
+Rij_stats = []
+for Rs in range(theta_total):
+    Rij_stats.append([])    
     
-    CMrotInfo = rotInfo[CM-1]
-    optAngle = CMrotInfo[1]
-    if radians is False:
-        rotations.append(optAngle)
-    elif radians is True:
-        rotations.append(optAngle*(np.pi/180))
-         
-if 1:
-    print('R mean:', np.mean(rotations))
-    print('R std:', np.std(rotations))
-    print('R range:', np.amax(rotations) - np.amin(rotations))
-    print('R max:', np.amax(rotations))
-    print('R min:', np.amin(rotations))
-    plt.hist(rotations, bins=60, edgecolor='k', linewidth=1, color='C0')
-    if radians is False:
-        plt.xlabel('Angle (degrees)', fontsize=16, labelpad=10)
-        plt.xticks([0,30,60,90,120,150,180])
-    elif radians is True:
-        plt.xlabel('Angle (radians)', fontsize=16, labelpad=10)
-    plt.ylabel('Frequency', fontsize=16, labelpad=10)
+for pd in range(1, totalPDs+1):
+    pd = "{0:0=3d}".format(pd)
+    rotMatrices = os.path.join(pyDir, 'Data_Rotations/PD%s/PD%s_RotMatrices.npy' % (pd,pd))
+    rotEigenfunctions = os.path.join(pyDir, 'Data_Rotations/PD%s/PD%s_RotEigenfunctions.npy' % (pd,pd))
+    rotParameters = os.path.join(pyDir, 'Data_Rotations/PD%s/PD%s_RotParameters.npy' % (pd,pd))
+    rotMatrix = np.load(rotMatrices)
+    rotEigs = np.load(rotEigenfunctions)
+    rotParams = np.load(rotParameters)
+    if dim != rotParams[0]:
+        print('Dimensionality conflict detected.') #see 'dim' comment above
+    v1_list = []
+    v2_list = []
+    for i in range(len(rotEigs)-1):
+        if rotEigs[i] != 0:
+            v1_list.append(i+1)
+            v2_list.append(int(rotEigs[i]+1))
+    thetas = rotMatrix[CM]
+    for t in range(theta_total):
+        Rij_stats[t].append(thetas[t]*(180/np.pi))
+
+    
+for t in range(theta_total):
+    plt.subplot(3,int(theta_total/3),t+1) #will need to update figure dimensions and labels based on 'dim' used
+    plt.hist(Rij_stats[t], bins=60, edgecolor='k', linewidth=1, color='C0')
+    if t > 9:
+        plt.xlabel('Angle (degrees)', fontsize=14, labelpad=10)
+    #plt.xticks([-45,-30,-15,0,15,30,45])
+    plt.title('R$_{%s}$' % (t+1), fontsize=16)
+    if t%5 == 0:
+        plt.ylabel('Frequency', fontsize=14, labelpad=15)
     plt.tight_layout()
-    plt.show()
+
+plt.subplots_adjust(left=0.05, bottom=0.075, right=0.95, top=0.95, wspace=0.25, hspace=0.25)
+plt.show()

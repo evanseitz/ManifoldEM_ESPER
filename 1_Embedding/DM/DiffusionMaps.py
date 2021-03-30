@@ -1,49 +1,57 @@
-import sys, os, re
+import sys, os
 import numpy as np
-from numpy import linalg as LA
-from scipy.spatial.distance import pdist, cdist, squareform
-import pandas as pd
 import matplotlib
 from matplotlib import rc
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from pylab import imshow, show, loadtxt, axes
+from matplotlib import cm
+from pylab import imshow, show
 import scipy
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.ticker import MaxNLocator
 import GaussianBandwidth
 
 # =============================================================================
 # Embed distance files for each PD via diffusion maps framework
 # =============================================================================
-# SETUP: First, make sure the input file path is correct for your dataset...
-#   ...via the 'Dist' variable below. You may also want to edit output names...
-#   ...such as those that include `tau` (here, set to 5 as default)
-# RUNNING: To run a series of PDs at once: first edit `2_DM_Batch.sh`...
+# SETUP: Before running this script, distance matrices must first be created...
+#   ...via the script '1_Dist_Batch'. Next, make sure the input file path matches...
+#   ...the one created for your dataset via the 'Dist' variable below.
+# RUNNING: To run a series of PDs at once: first edit '2_DM_Batch.sh'...
 #   ...for the total number of PDs requested; e.g., {1...5} for 5 PDs...
-#   ...or {1...1} for only the first PD;
-#   ...then start batch processing via `sh 2_DM_Batch.sh`
+#   ...then start batch processing via 'sh 2_DM_Batch.sh'
 # =============================================================================
-# Author:    E. Seitz @ Columbia University - Frank Lab - 2020
+# Author:    E. Seitz @ Columbia University - Frank Lab - 2020-2021
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
 
 def op(pyDir, PD):
-    dataDir = os.path.join(pyDir, 'Data_Distances')
+    parDir1 = os.path.abspath(os.path.join(pyDir, os.pardir))
+    parDir2 = os.path.abspath(os.path.join(parDir1, os.pardir))
+    
+    # =========================================================================
+    # User parameters:
+    # =========================================================================
+    groundTruth = True #use GT indices for visualizations; see '0_Data_Inputs/GroundTruth_Indices'
+    viewCM = 1 #{1,2, etc.}; if using ground-truth, CM reference frame to use for color map indices
+    
+    # =========================================================================
+    # Prepare directories and import files:
+    # =========================================================================    
     outDir = os.path.join(pyDir, 'Data_Manifolds')
     if not os.path.exists(outDir):
         os.mkdir(outDir)
-    #Dist = np.load(os.path.join(dataDir, 'PD%s_tau5_SNR_dist.npy' % PD))
-    Dist = np.load(os.path.join(dataDir, 'PD%s_tau1_dist.npy' % PD))
-
+    dataDir = os.path.join(pyDir, 'Data_Distances')
+    Dist = np.load(os.path.join(dataDir, 'PD_%s_dist.npy' % PD))
+    
+    if groundTruth is True:
+        if viewCM == 1: #view in reference frame of CM1
+            CM_idx = np.load(os.path.join(parDir2, '0_Data_Inputs/GroundTruth_Indices/CM1_Indices.npy'), allow_pickle=True)
+        elif viewCM == 2: #view in reference frame of CM2
+            CM_idx = np.load(os.path.join(parDir2, '0_Data_Inputs/GroundTruth_Indices/CM2_Indices.npy'), allow_pickle=True)
+        
     # =========================================================================
     # Distances matrix analysis
     # =========================================================================
     m = np.shape(Dist)[0]
-    if 0: #if smaller subset of states wanted for investigation
-        m = 20
-        Dist = Dist[0:m, 0:m] #for CM2 only (if using example dataset)
-        #Dist = Dist[::20, ::20] #for CM1 only (if using example dataset)
     
     if 0: #plot Distance matrix
         imshow(Dist, cmap='jet', origin='lower', interpolation='nearest')
@@ -61,10 +69,10 @@ def op(pyDir, PD):
     # =========================================================================
     # Method to estimate optimal epsilon; see Ferguson SI (2010)
     # =========================================================================
-    if 1:
-        logEps = np.arange(-20,20.2,0.2)
+    if 1: #automated approach
+        logEps = np.arange(-100, 100.2, 0.2) #may need to widen range if a hyperbolic tangent is not captured
         a0 = 1*(np.random.rand(4,1)-.5)
-        popt, logSumWij, resnorm, R2 = GaussianBandwidth.op(Dist,logEps,a0)
+        popt, logSumWij, resnorm, R2 = GaussianBandwidth.op(Dist, logEps, a0)
         
         def fun(xx, aa0, aa1, aa2, aa3): #fit tanh()
             F = aa3 + aa2 * np.tanh(aa0 * xx + aa1)
@@ -81,16 +89,17 @@ def op(pyDir, PD):
         plt.ylim(np.amin(fun(logEps, popt[0], popt[1], popt[2], popt[3]))-1, np.amax(fun(logEps, popt[0], popt[1], popt[2], popt[3]))+1)
     
         slope = popt[0]*popt[2] #slope of tanh
-        eps = -(popt[1] / popt[0]) #x-axis line through center of tanh
+        ln_eps = -(popt[1] / popt[0]) #x-axis line through center of tanh
+        eps = np.exp(ln_eps)
         print('Coefficient of Determination: %s' % R2)
         print('Slope: %s' % slope) 
-        print('ln(epsilon): %s; epsilon: %s' % (eps, np.exp(eps)))
-        if 0: #plot Gaussian Bandwidth
+        print('ln(epsilon): %s; epsilon: %s' % (ln_eps, eps))
+        if 0: #plot Gaussian Bandwidth (graph should be a hyperbolic tangent)
             plt.show()
         if 0: #save Gaussian Bandwidth plot to file
             np.save('GaussianBandwidth_PD%s.npy' % PD, [logEps, logSumWij])
     else: #manually input different epsilon (trial and error) if manifolds generated with above methods not converged
-        eps = 1e4 #as an example, 1e4 was used for all {tau=1, SNR=inf} (pristine) datasets
+        eps = 2e9 #1e4 #as an example, 1e4 worked for our {tau=1, SNR=inf} (pristine) datasets; while 1e9 could be used for datasets with CTF
     
     # =========================================================================
     # Generate optimal Gaussian kernel for Similarity Matrix (A)
@@ -154,9 +163,8 @@ def op(pyDir, PD):
     # =========================================================================
     U, sdiag, vh = np.linalg.svd(Ms) #vh = U.T
     sdiag = sdiag**(2.) #eigenvalues given by s**2
-    
-    np.save(os.path.join(outDir, 'PD%s_tau1_val.npy' % PD), sdiag)
-    np.save(os.path.join(outDir, 'PD%s_tau1_vec.npy' % PD), U)
+    np.save(os.path.join(outDir, 'PD_%s_val.npy' % PD), sdiag)
+    np.save(os.path.join(outDir, 'PD_%s_vec.npy' % PD), U)
         
     # =========================================================================
     # Analysis of diffusion map
@@ -182,22 +190,23 @@ def op(pyDir, PD):
         plt.axhline(y=0, color='k', alpha=.5, linestyle='--', linewidth=1)
         plt.show()
     
-    if 1: #2d diffusion map; sets of higher-order eigenfunction combinations     
-        enum = np.arange(1,m+1)
-        s = 20
-        lw = .5
-        cmap = 'nipy_spectral' #'gist_rainbow' 
-        fig = plt.figure()
-        dimRows = 6
-        dimCols = 9
+    if 1: #ordered array 2D manifold subspaces    
+        dimRows = 4
+        dimCols = 6
         idx = 1
         for v1 in range(1,dimRows+1):
             for v2 in range(v1+1, v1+dimCols+1):
                 plt.subplot(dimRows, dimCols, idx)
-                plt.scatter(U[:,v1], U[:,v2], c=enum, cmap=cmap, s=s, linewidths=lw, edgecolor='k') #gist_rainbow, nipy_spectral
-                #plt.plot(U[:,v1], U[:,v2], zorder=-1, color='black', alpha=.25)
-                plt.xlabel(r'$\Psi_{%s}$' % v1, fontsize=12, labelpad=5)
-                plt.ylabel(r'$\Psi_{%s}$' % v2, fontsize=12, labelpad=2.5)
+                if groundTruth is True:
+                    color=iter(cm.tab20(np.linspace(1, 0, np.shape(CM_idx)[0])))
+                    for b in range(np.shape(CM_idx)[0]):
+                        c=next(color)
+                        plt.scatter(U[:,v1][CM_idx[b]], U[:,v2][CM_idx[b]], color=c, s=15, edgecolor='k', linewidths=.1, zorder=1)
+                    #plt.scatter(U[:,v1], U[:,v2], c=np.arange(1,m+1), cmap=cmap, s=s, linewidths=lw, edgecolor='k') #cmap: 'nipy_spectral', 'gist_rainbow'
+                else:
+                    plt.scatter(U[:,v1], U[:,v2], c='white', s=20, linewidths=.5, edgecolor='k', zorder=0)
+                plt.xlabel(r'$\Psi_{%s}$' % v1, fontsize=6, labelpad=2.5)
+                plt.ylabel(r'$\Psi_{%s}$' % v2, fontsize=6, labelpad=2.5)
                 plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
                 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0)) 
                 plt.rc('font', size=6)
@@ -218,10 +227,12 @@ def op(pyDir, PD):
                 idx += 1 
         plt.tight_layout()
         plt.subplots_adjust(left=0.02, right=0.99, bottom=0.05, top=0.99, wspace=0.26, hspace=0.23)
-        plt.show()
+        #plt.show()
+        fig = plt.gcf()
+        fig.savefig(os.path.join(outDir,'Fig_PD_%s.png' % PD), dpi=200)
+        plt.clf()
         
 if __name__ == '__main__':
     path1 = os.path.splitext(sys.argv[0])[0]
     path2, tail = os.path.split(path1)
     op(path2, sys.argv[1])
-        
