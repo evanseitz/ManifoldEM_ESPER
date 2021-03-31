@@ -2,10 +2,10 @@ import numpy as np
 import sympy
 
 # =============================================================================
-# Least squares fit each 2D subspace per CM with constrained conic (parabola)
+# Least squares fit each 2D subspace per CM with constrained conic
 # =============================================================================
-# Codified:    E. Seitz @ Columbia University - Frank Lab - 2020-2021
-# Contact:   evan.e.seitz@gmail.com
+# Codified: E. Seitz @ Columbia University - Frank Lab - 2020-2021
+# Contact: evan.e.seitz@gmail.com
 # =============================================================================
 
 def fit1(U_rot_Nd1, v1, v2): #restrained conic fit (parabola)

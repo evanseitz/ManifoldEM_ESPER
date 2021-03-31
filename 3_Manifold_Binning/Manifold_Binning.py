@@ -29,7 +29,8 @@ parDir = os.path.abspath(os.path.join(pyDir, os.pardir))
 rotDir = os.path.join(parDir, '2_Manifold_Rotations')
 sys.path.append(rotDir)
 import Generate_Nd_Rot
-import ConicFit_Parabola
+import ConicFit
+import AbsValFit
 
 if 1: #render with LaTeX font for figures
     rc('text', usetex=True)
@@ -56,22 +57,27 @@ if 1: #render with LaTeX font for figures
 # User parameters:
 # =============================================================================
 groundTruth = True #use GT indices for visualizations; see '0_Data_Inputs/GroundTruth_Indices'
+viewCM = 2 #{1,2, etc.}; if using ground-truth, CM reference frame to use for color map indices
 PCA = False #specify if manifolds from PCA or DM folder {if False, DM is True}
 CTF = True #if CTF protocols previously used in DM
 totalPDs = 126
 totalCMs = 2 #total number of CMs to consider via leading results in previous algorithm
 Bins = 20 #number of bins for each CM (i.e., energy landscape bins); **even numbers only**
 printFigs = True #save figures of outputs throughout framework to file
+R2_thresh = 0.6 #R^2 fit-score threshold... if above: Conic Fit is used; if below, Absolute Value is used. 
 
 if groundTruth is True:
     CM1_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM1_Indices.npy'), allow_pickle=True) #view in reference frame of CM1
     CM2_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM2_Indices.npy'), allow_pickle=True) #view in reference frame of CM2
-
+    if viewCM == 1:
+        CM_idx = CM1_idx
+    elif viewCM == 2:
+        CM_idx = CM2_idx #(etc.)
 
 # =============================================================================
 # Main loop:
 # =============================================================================
-for PD in range(1,totalPDs+1):
+for PD in range(68,totalPDs+1):
     PD = "{0:0=3d}".format(PD)
     print('')
     print('PD:',PD)
@@ -158,7 +164,7 @@ for PD in range(1,totalPDs+1):
     # =========================================================================
     # MAIN LOOP: fit each manifold, project points onto fits, bin, and save
     # =========================================================================    
-    for CM in range(0,totalCMs): #[0,1]
+    for CM in [0,1]:#range(0,totalCMs): #[0,1]
         print('CM:', (CM+1))
         figIdx = 1
         # Create directory for each CM:
@@ -180,11 +186,7 @@ for PD in range(1,totalPDs+1):
         # =====================================================================
         # Use previously-defined optimal theta to rotate high-dim manifold into place
         # =====================================================================
-        try:
-            R = Generate_Nd_Rot.genNdRotations(dim, thetas)
-        except:
-            print("Loading error: ensure 'dim' variable correctly set above.")
-            print('')
+        R = Generate_Nd_Rot.genNdRotations(dim, thetas)
         U_rot_Nd = np.matmul(R, U_init.T)
         U_rot_Nd = U_rot_Nd.T
         
@@ -215,9 +217,10 @@ for PD in range(1,totalPDs+1):
         if 0:
             # =================================================================
             # 2D Parabolic Fit and Optimal In-Plane Rotation:
-            # Note: parabolic restraint (see paper)
+            # Method uses parabolic restraint (see paper)
+            # Note: corresponding code still needs to be reviewed.
             # =================================================================
-            cF, cF0, Theta, R2 = ConicFit_Parabola.fit1(U_rot_Nd_in, v1, v2)
+            cF, cF0, Theta, R2 = ConicFit.fit1(U_rot_Nd_in, v1, v2)
             # Define orientation of conic (facing up or down):
             if cF0[4] > 0: #upward-facing
                 face = 'up'
@@ -229,7 +232,7 @@ for PD in range(1,totalPDs+1):
             # Note: no parabolic restraints; observed to be more robust...
             # ...and essential if CTF present.
             # =================================================================
-            cF, cF0, Theta, R2 = ConicFit_Parabola.fit2(U_rot_Nd_in, v1, v2)
+            cF, cF0, Theta, R2 = ConicFit.fit2(U_rot_Nd_in, v1, v2)
             # Define orientation of conic (facing up or down):
             if cF0[4] < 0: #upward-facing
                 face = 'up'
@@ -266,8 +269,8 @@ for PD in range(1,totalPDs+1):
         plt.plot([h, h], [-1.1, 1.1], c='C0') #line of symmetry
         plt.plot([h, h], [-1.1, 1.1], c='C0') #line of symmetry
         #plt.scatter(h, k, c='C0')
-        disc = cF0[1]**2 - 4.*cF0[0]*cF0[2] #discriminant        
-        plt.title(r'$\theta$=%.3f$^{\circ}$, R$^{2}$=%.3f' % ((Theta*180/np.pi), R2), fontsize=12) #np.arccos(cosTh)*180/np.pi) #degrees
+        disc = cF0[1]**2 - 4.*cF0[0]*cF0[2] #discriminant
+        plt.title(r'$\theta$=%.2f$^{\circ}$, R$^{2}$=%.2f, D=%.2f' % ((Theta*180/np.pi), R2, disc), fontsize=10) #np.arccos(cosTh)*180/np.pi) #degrees
         Conic0 = cF0[0]*XX**2 + cF0[1]*XX*YY + cF0[2]*YY**2 + cF0[3]*XX + cF0[4]*YY + cF0[5]
         cs0 = plt.contour(XX, YY, Conic0, [0], colors='C0', zorder=1)
 
@@ -315,9 +318,9 @@ for PD in range(1,totalPDs+1):
         #plt.show()
         plt.clf()
                                                  
-        if R2 < .15: #may need to tune as needed for specific datasets
-            print('Fitting Error: parabolic fit score insufficient.')
-            continue
+        '''if R2 < .15: #may need to tune as needed for specific datasets
+            print('Fitting Error: fit score insufficient.')
+            continue'''
         
         # =====================================================================
         # Arccos transformation:        
@@ -405,6 +408,11 @@ for PD in range(1,totalPDs+1):
             figIdx += 1
             #plt.show()
             plt.clf()
+            
+        if R2 < R2_thresh: #alternative fit required if suboptimal least-squares conic fit detected; R^2 threshold may need to be adjusted
+            print('Suboptimal conic fit detected. Initiating alternative fit...')
+            fit1_LHS_x, fit1_LHS_y, fit1_RHS_x, fit1_RHS_y, split_LHS_idx, split_RHS_idx, face = AbsValFit.op(U_arc_2d, groundTruth, CM_idx, v1, v2, figIdx, outDir)
+            figIdx += 1
 
         for side in [0,1]:
             if side == 0:
@@ -432,7 +440,7 @@ for PD in range(1,totalPDs+1):
             inliers = []
             outliers = []
             for i in final_tree:
-                if len(i) > 15:
+                if len(i) > 10: #15; may need to adjust based on dataset noise
                     for j in i:
                         inliers.append(j)
                 else:
@@ -486,7 +494,7 @@ for PD in range(1,totalPDs+1):
             if 0: #last polygon generated in sequence before emergence of Multipolygon
                 Alpha = Alphas[-1] 
             else: #wind back for coarser polygon
-                windBack = int(len(Alphas)*.2) #.6
+                windBack = int(len(Alphas)*.2) #may need to be adjusted; .6
                 Alpha = Alphas[-(windBack)] 
             alpha_shape = alphashape.alphashape(points_in, Alpha)
             polygonMain = Polygon(alpha_shape)
@@ -520,22 +528,44 @@ for PD in range(1,totalPDs+1):
                 base_alphaX, base_alphaY = boundary_both.xy
             
             base_alphaY = np.array(base_alphaY)[0]
-            base_alphaY_new = (np.arccos(0) + base_alphaY)/2. #needed if 'CTF' is True
+            if CTF is True:
+                base_alphaY0 = base_alphaY #save copy
+                base_alphaY = (np.arccos(0) + base_alphaY)/2. #needed if 'CTF' is True
+                if R2 < R2_thresh: #alternative fit required if suboptimal least-squares conic fit detected; see previous use above as well
+                    if face == 'down':
+                        base_alphaY = -np.pi
+                    elif face == 'up':
+                        base_alphaY = np.pi*2
             
-            # Given boundary points, crop previous spline fit:         
+            # Given Alpha shape boundaries, crop previous fits:         
             fit2_x = []
             fit2_y = []
-            y_idx = 0
-            for y in fit1_y:
-                if face == 'up':
-                    if y <= base_alphaY:
-                        fit2_x.append(fit1_x[y_idx])
-                        fit2_y.append(y)
-                elif face == 'down':
-                    if y >= base_alphaY:
-                        fit2_x.append(fit1_x[y_idx])
-                        fit2_y.append(y)
-                y_idx += 1
+            # Low R2 corresponds to more globular point-cloud; requires horizontal cutoff conditions at boundaries:
+            if R2 < R2_thresh:
+                x_idx = 0
+                for x in fit1_x:
+                    if side == 0:
+                        if x >= base_alphaX:
+                            fit2_x.append(x)
+                            fit2_y.append(fit1_y[x_idx])
+                    elif side == 1:
+                        if x <= base_alphaX:
+                            fit2_x.append(x)
+                            fit2_y.append(fit1_y[x_idx])
+                    x_idx += 1
+            # High R2 corresponds to highly parabolic point-cloud; requires vertical cutoff conditions at boundaries:
+            else: 
+                y_idx = 0
+                for y in fit1_y:
+                    if face == 'up':
+                        if y <= base_alphaY0:
+                            fit2_x.append(fit1_x[y_idx])
+                            fit2_y.append(y)
+                    elif face == 'down':
+                        if y >= base_alphaY0:
+                            fit2_x.append(fit1_x[y_idx])
+                            fit2_y.append(y)
+                    y_idx += 1
                 
             # Re-order x-values and y-values in sequence:
             if fit2_x[0] > fit2_x[-1]:
@@ -548,62 +578,65 @@ for PD in range(1,totalPDs+1):
                 return idx
                 
             lineSplineFinal = asLineString(np.vstack((fit2_x,fit2_y)).T)
+            if R2 >= R2_thresh:           
+                if side == 0:
+                    if face == 'up':
+                        lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX-3, base_alphaY-1)])
+                        lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY-3)])
+                    elif face == 'down':
+                        lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX-3, base_alphaY+1)])
+                        lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY+3)])
+                elif side == 1:
+                    if face == 'up':
+                        lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX+3, base_alphaY-1)])
+                        lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY-3)])
+                    elif face == 'down':
+                        lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX+3, base_alphaY+1)])
+                        lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY+3)])
+    
+                # =================================================================
+                # Optional: Dilate the spline such that it takes up a % of the area...
+                # ...of the alpha-shape, and then merge that dilated spline polygon...
+                # ...with the alpha-shape polygon. This step acts as a safeguard for...
+                # ...alpha-shapes that tend to cut into the point-cloud irregularly...
+                # ...or point-clouds that have sections that are sparse or missing.
+                # =================================================================
+                dilatedAreas = []
+                dilations = []
+                dilatedPolys = []
+                for b in np.linspace(0,0.5,30):
+                    dilations.append(b)
+                    dilated = lineSplineFinal.buffer(b)
+                    try:
+                        polySplit = split(dilated, lineRayHorz) #subdivide polygon with an intersecting line
+                        polySegs = [] #for possibility of more than two segments generated during split
+                        for poly in polySplit: #required in the case that very small segments are also produced along with the largest two
+                            polySplitSolo = Polygon(poly)
+                            polySegs.append(polySplitSolo.area)
+                        polyIdxs = heapq.nlargest(2, range(len(polySegs)), key=polySegs.__getitem__) #keep polygon with largest area
+                        dilated_cut1 = Polygon(polySplit[polyIdxs[0]])
+    
+                        polySplit = split(dilated_cut1, lineRayVert) #subdivide polygon with an intersecting line
+                        polySegs = [] #for possibility of more than two segments generated during split
+                        for poly in polySplit: #required in the case that very small segments are also produced along with the largest two
+                            polySplitSolo = Polygon(poly)
+                            polySegs.append(polySplitSolo.area)
+                        polyIdxs = heapq.nlargest(2, range(len(polySegs)), key=polySegs.__getitem__) #keep polygon with largest area
+                        dilated_cut2 = Polygon(polySplit[polyIdxs[0]])
                         
-            if side == 0:
-                if face == 'up':
-                    lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX-3, base_alphaY-1)])
-                    lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY-3)])
-                elif face == 'down':
-                    lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX-3, base_alphaY+1)])
-                    lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY+3)])
-            elif side == 1:
-                if face == 'up':
-                    lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX+3, base_alphaY-1)])
-                    lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY-3)])
-                elif face == 'down':
-                    lineRayHorz = LineString([(center_fitX, base_alphaY), (center_fitX+3, base_alphaY+1)])
-                    lineRayVert = LineString([(center_fitX, base_alphaY), (center_fitX, base_alphaY+3)])
-
-            # =================================================================
-            # Optional: Dilate the spline such that it takes up half of the area...
-            # ...of the alpha-shape, and then merge that dilated spline polygon...
-            # ...with the alpha-shape polygon. This step acts as a safeguard for...
-            # ...alpha-shapes that tend to cut into the point-cloud irregularly...
-            # ...or point-clouds that have sections that are sparse or missing.
-            # =================================================================
-            dilatedAreas = []
-            dilations = []
-            dilatedPolys = []
-            for b in np.linspace(0,0.5,30):
-                dilations.append(b)
-                dilated = lineSplineFinal.buffer(b)
-                try:
-                    polySplit = split(dilated, lineRayHorz) #subdivide polygon with an intersecting line
-                    polySegs = [] #for possibility of more than two segments generated during split
-                    for poly in polySplit: #required in the case that very small segments are also produced along with the largest two
-                        polySplitSolo = Polygon(poly)
-                        polySegs.append(polySplitSolo.area)
-                    polyIdxs = heapq.nlargest(2, range(len(polySegs)), key=polySegs.__getitem__) #keep polygon with largest area
-                    dilated_cut1 = Polygon(polySplit[polyIdxs[0]])
-
-                    polySplit = split(dilated_cut1, lineRayVert) #subdivide polygon with an intersecting line
-                    polySegs = [] #for possibility of more than two segments generated during split
-                    for poly in polySplit: #required in the case that very small segments are also produced along with the largest two
-                        polySplitSolo = Polygon(poly)
-                        polySegs.append(polySplitSolo.area)
-                    polyIdxs = heapq.nlargest(2, range(len(polySegs)), key=polySegs.__getitem__) #keep polygon with largest area
-                    dilated_cut2 = Polygon(polySplit[polyIdxs[0]])
-                    
-                    dilatedPolys.append(dilated_cut2)
-                    dilatedAreas.append(dilated_cut2.area)
-                except:
-                    dilatedAreas.append(99)
-                    dilatedPolys.append(99)  
-            dilation_idx = find_nearest_val(dilatedAreas, (polygonMain.area)*.6)
-            dilated = dilatedPolys[dilation_idx]
-            dilatedMerged = polygonMain.union(dilated)
-            
-            if printFigs: #plot Alpha Shape polygon with cropped spline overlaid
+                        dilatedPolys.append(dilated_cut2)
+                        dilatedAreas.append(dilated_cut2.area)
+                    except:
+                        dilatedAreas.append(99)
+                        dilatedPolys.append(99)  
+                dilation_idx = find_nearest_val(dilatedAreas, (polygonMain.area)*.5)
+                dilated = dilatedPolys[dilation_idx]
+                dilatedMerged = polygonMain.union(dilated)
+            else:
+                dilatedMerged = polygonMain
+                
+            # Plot Alpha Shape polygon with cropped fit overlaid:
+            if printFigs: 
                 plt.title('Alpha: %.2f, Area: %.2f' % (Alpha, polyAreaTotal))
                 plt.gca().add_patch(PolygonPatch(dilatedMerged, facecolor='#99ccff', edgecolor='#6699cc', alpha=0.8))
                 if 0:
@@ -616,14 +649,16 @@ for PD in range(1,totalPDs+1):
                 plt.scatter(*zip(*points_all), s=1, c='lightgray', zorder=-1)
                 plt.plot(fit2_x, fit2_y, c='r', linewidth=2, zorder=1, alpha=.5)
                 if CTF is True:
-                    plt.scatter(center_fitX, base_alphaY_new, c='k', s=s)
+                    plt.scatter(center_fitX, base_alphaY, c='k', s=s)
+                    plt.axhline(y=base_alphaY0, linewidth=1, c='k', zorder=1)
                 elif CTF is False:
                     plt.scatter(center_fitX, base_alphaY, c='k', s=s)
+                    plt.axhline(y=base_alphaY, linewidth=1, c='k', zorder=1)
                 plt.axvline(x=center_fitX, linewidth=1, c='k', zorder=1)
-                plt.axhline(y=base_alphaY, linewidth=1, c='k', zorder=1)
                 plt.xlabel(r'$\Phi_{%s}$' % (int(v1)+1), labelpad=5, fontsize=14)
                 plt.ylabel(r'$\Phi_{%s}$' % (int(v2)+1), labelpad=7.5, fontsize=14)
                 plt.axis('scaled')
+                plt.ylim(0,np.pi)
                 fig = plt.gcf()
                 fig.savefig(os.path.join(outDir,'Fig_%s_Alpha_%s.png' % (figIdx, side_text)), dpi=200)
                 figIdx += 1
@@ -644,13 +679,13 @@ for PD in range(1,totalPDs+1):
             angIdx = 0
             for ang in angles:
                 if side == 0:
-                    x0 = -2.5 #vector must be long enough as to completely intersect polygon
+                    x0 = -10 #vector must be long enough as to completely intersect polygon
                     if face == 'down':
                         Ang = -1*ang*(np.pi/180.)
                     elif face == 'up':
                         Ang = ang*(np.pi/180.)
                 elif side == 1:
-                    x0 = 2.5 #vector must be long enough as to completely intersect polygon
+                    x0 = 10 #vector must be long enough as to completely intersect polygon
                     if face == 'down':
                         Ang = ang*(np.pi/180.)
                     elif face == 'up':
@@ -659,7 +694,7 @@ for PD in range(1,totalPDs+1):
                 xR = x0*np.cos(Ang) - y0*np.sin(Ang)
                 yR = x0*np.sin(Ang) + y0*np.cos(Ang)
                 if CTF is True:
-                    lineRay = LineString([(center_fitX, base_alphaY_new), (xR + center_fitX, yR + base_alphaY_new)]) #translate and rotate line
+                    lineRay = LineString([(center_fitX, base_alphaY), (xR + center_fitX, yR + base_alphaY)]) #translate and rotate line
                 else:
                     lineRay = LineString([(center_fitX, base_alphaY), (xR + center_fitX, yR + base_alphaY)]) #translate and rotate line
                 try:
@@ -680,10 +715,10 @@ for PD in range(1,totalPDs+1):
                     except:
                         linesCross = linesCross
                     lineCrosses.append(linesCross)
-                    if 0: #sanity check: view rotations and corresponding subdivisions
+                    if 0: #sanity check: view rotations and corresponding subdivisions; may need to decrease vector length above for better visualization
                         plt.clf()
                         if CTF is True:
-                            plt.scatter(center_fitX, base_alphaY_new, c='magenta', zorder=3)
+                            plt.scatter(center_fitX, base_alphaY, c='magenta', zorder=3)
                         elif CTF is False:
                             plt.scatter(center_fitX, base_alphaY, c='magenta', zorder=3)
                         plt.gca().add_patch(PolygonPatch(polySplit1, alpha=0.2, color='red', label=('Area: %.4f' % polySplit1.area)))
@@ -740,15 +775,14 @@ for PD in range(1,totalPDs+1):
             
             binEdgesCoords = [] #list of bin edges
             binEdgesIdxs = [] #closest indices for each bin edge on fitted line
-            
             if 0: #uniform area distribution for all bins
                 for r in range(1,int((Bins/2))):
                     ratio = r/(Bins/2.)
                     ratio_idx = find_nearest_val(polyAreaRatios, ratio)
                     binEdgesCoords.append(lineCrosses[ratio_idx])
-            else: #slightly less area for bin closest to center
-                #eps = .0015 #ZULU
-                eps = (.905/((Bins/2)-1) - (1/(Bins/2))) #ZULU
+            else: #slightly less area for bin closest to center due to increased outlier trend; experimental!
+                #eps = .0015
+                eps = (.905/((Bins/2)-1) - (1/(Bins/2)))
                 ratio = (1/(Bins/2.)) + eps
                 ratioCurr = ratio
                 for r in range(1,int((Bins/2))):
@@ -883,7 +917,7 @@ for PD in range(1,totalPDs+1):
             print('Performing ray projections (%s/2)...' % (side+1))
             fitList3 = zip(fit2_x, fit2_y) #each x-fit and y-fit coord, ordered along the curve
             if CTF is True:
-                imageIdxSort3 = reorder2(U_arc_2d, fitList3, split_idx, center_fitX, base_alphaY_new, side, face) #project and order image-pts onto spline via rays
+                imageIdxSort3 = reorder2(U_arc_2d, fitList3, split_idx, center_fitX, base_alphaY, side, face) #project and order image-pts onto spline via rays
             elif CTF is False:
                 imageIdxSort3 = reorder2(U_arc_2d, fitList3, split_idx, center_fitX, base_alphaY, side, face) #project and order image-pts onto spline via rays
             # Note for above: column 1 = image index; column 2 = fit index (sorted from low to high)

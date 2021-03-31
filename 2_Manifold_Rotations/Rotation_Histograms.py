@@ -12,7 +12,7 @@ pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 parDir = os.path.abspath(os.path.join(pyDir, os.pardir))
 fitDir = os.path.join(parDir, '3_Manifold_Binning') #ZULU change
 sys.path.append(fitDir)
-import ConicFit_Parabola
+import ConicFit
 
 if 0: #render with LaTeX font for figures
     rc('text', usetex=True)
@@ -159,10 +159,10 @@ def op(pyDir, PD):
             for v2 in range(dim_start,dim):      
 
                 if CTF is False:
-                    cF, R2 = ConicFit_Parabola.fit3(U_init, v1, v2) #parabolic fit, no cross-terms
+                    cF, R2 = ConicFit.fit3(U_init, v1, v2) #parabolic fit, no cross-terms
                     disc = -1 #dummy variable to compensate for CTF logic
                 elif CTF is True: #need to compensate for inward-curling of manifolds due to defocus-tolerant kernel
-                    cF1, cF, Theta2D, R2 = ConicFit_Parabola.fit2(U_init, v1, v2) #general conic with cross-terms
+                    cF1, cF, Theta2D, R2 = ConicFit.fit2(U_init, v1, v2) #general conic with cross-terms
                     disc = cF[1]**2 - 4.*cF[0]*cF[2] #discriminant
                 
                 if R2 > R2_best and v2 != R2_best_psi[0]:#and disc < .01 #may need to be changed to disallow for certain cases of hyperbolas (via 'disc')...
@@ -174,9 +174,9 @@ def op(pyDir, PD):
                     figFits.add_subplot(figFitsSpec[v1,v2])
                     x_range = np.linspace(-1.1, 1.1, 1000)
                     XX, YY = np.meshgrid(x_range, x_range)
-                    if CTF is False: #if ConicFit_Parabola.fit3 used above
+                    if CTF is False: #if ConicFit.fit3 used above
                         plt.plot(x_range, cF[0]*x_range**2 + cF[1]*x_range + cF[2], c='C3', zorder=1, linewidth=1) 
-                    elif CTF is True: #if ConicFit_Parabola.fit2 used above
+                    elif CTF is True: #if ConicFit.fit2 used above
                         Conic = cF[0]*XX**2 + cF[1]*XX*YY + cF[2]*YY**2 + cF[3]*XX + cF[4]*YY + cF[5] 
                         plt.contour(XX, YY, Conic, [0], colors='C3', zorder=1)
                     plt.scatter(U_init[:,v1], U_init[:,v2], s=5, c='white', linewidth=lw, edgecolor='lightgray', zorder=-1) #c=enum, cmap=cmap
