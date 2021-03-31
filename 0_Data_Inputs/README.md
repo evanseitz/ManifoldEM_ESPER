@@ -7,4 +7,4 @@ The `2_PDs_2D` folder contains 400 images (corresponding to 400 states with two 
 
 To emulate experimental conditions, however, these pristine images can be duplicated a fixed number of times (via a user defined `tau` parameter), with each duplicate image given unique additive Gaussian noise (via calculation of appropriate SNR, as also chosen by the user). This functions can be performed via code in the `Pristine_AddTauSNR` folder. As an example of `tau` usage, `tau = 5` will result in 5 duplicates per state, and thus 5 x 400 = 2000 images per new PD stack. Additionally, the folder `Pristine_AddCtfSNR` can be used to modify images with experimentally-relevant CTF.
 
-Once you have readied your data in this folder by means of these sample PDs or a more elaborate construction, proceed next to `1_Embedding`.
+Once you have readied your data in this folder by means of these sample PDs or a more elaborate construction, proceed next to the `1_Embedding` directory.
