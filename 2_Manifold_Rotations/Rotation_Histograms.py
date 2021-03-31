@@ -165,7 +165,7 @@ def op(pyDir, PD):
                     cF1, cF, Theta2D, R2 = ConicFit_Parabola.fit2(U_init, v1, v2) #general conic with cross-terms
                     disc = cF[1]**2 - 4.*cF[0]*cF[2] #discriminant
                 
-                if R2 > R2_best and disc < .01 and v2 != R2_best_psi[0]: #may need to be changed to allow for certain cases of hyperbolas (via 'disc')...
+                if R2 > R2_best and v2 != R2_best_psi[0]:#and disc < .01 #may need to be changed to disallow for certain cases of hyperbolas (via 'disc')...
                     R2_best = R2
                     R2_best_vals[v1] = R2
                     R2_best_psi[v1] = v2 #index of psi is minus one
@@ -289,7 +289,6 @@ def op(pyDir, PD):
     
     comboListIdx = 0
     for v1, v2 in comboList:
-        print('v1: %s, v2: %s' % (v1, v2))
         #print('Psi %s, Psi %s' % (v1,v2))
         thetas = np.zeros(shape=(theta_total,1), dtype=float)
 
