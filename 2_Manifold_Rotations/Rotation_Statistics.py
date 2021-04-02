@@ -25,7 +25,7 @@ if 1: #render with LaTeX font for figures
     rc('text', usetex=True)
     rc('font', family='serif')
 
-totalPDs = 40 #total number of PDs
+totalPDs = 126 #total number of PDs
 CM = 0 #change this to match CM of interest (zero indexing)
 dim = 6 #must match 'dim' assignment used in 'Manifold_Binning.py'
 theta_total = int(float(dim)*(float(dim)-1.)/2.)
@@ -59,11 +59,11 @@ for t in range(theta_total):
     plt.subplot(3,int(theta_total/3),t+1) #will need to update figure dimensions and labels based on 'dim' used
     plt.hist(Rij_stats[t], bins=60, edgecolor='k', linewidth=1, color='C0')
     if t > 9:
-        plt.xlabel('Angle (degrees)', fontsize=14, labelpad=10)
+        plt.xlabel('Angle (degrees)', fontsize=16, labelpad=10)
     #plt.xticks([-45,-30,-15,0,15,30,45])
-    plt.title('R$_{%s}$' % (t+1), fontsize=16)
+    plt.title('R$_{%s}$' % (t+1), fontsize=18)
     if t%5 == 0:
-        plt.ylabel('Frequency', fontsize=14, labelpad=15)
+        plt.ylabel('Frequency', fontsize=16, labelpad=15)
     plt.tight_layout()
 
 plt.subplots_adjust(left=0.05, bottom=0.075, right=0.95, top=0.95, wspace=0.25, hspace=0.25)

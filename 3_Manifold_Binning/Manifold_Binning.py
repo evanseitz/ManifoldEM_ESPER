@@ -64,7 +64,7 @@ totalPDs = 126
 totalCMs = 2 #total number of CMs to consider via leading results in previous algorithm
 Bins = 20 #number of bins for each CM (i.e., energy landscape bins); **even numbers only**
 printFigs = True #save figures of outputs throughout framework to file
-R2_thresh = 0.6 #R^2 fit-score threshold... if above: Conic Fit is used; if below, Absolute Value is used. 
+R2_thresh = 0.55 #R^2 fit-score threshold... if above: Conic Fit is used; if below, Absolute Value is used. 
 
 if groundTruth is True:
     CM1_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM1_Indices.npy'), allow_pickle=True) #view in reference frame of CM1
@@ -77,7 +77,7 @@ if groundTruth is True:
 # =============================================================================
 # Main loop:
 # =============================================================================
-for PD in range(68,totalPDs+1):
+for PD in range(1,totalPDs+1):
     PD = "{0:0=3d}".format(PD)
     print('')
     print('PD:',PD)
@@ -127,7 +127,9 @@ for PD in range(68,totalPDs+1):
         d = _d if not copy else np.copy(_d)
         d -= np.min(d, axis=0)
         d /= (np.sum(d, axis=0) if to_sum else np.ptp(d, axis=0)) #normalize btw [0,1]
-        d = 2.*(d - np.min(d))/np.ptp(d)-1 #scale btw [-1,1]
+        #d = (2.*(d - np.min(d))/(np.ptp(d)))-1 #scale btw [-1,1]
+        output_low, output_high = -1, 1
+        d = ((d-np.min(d)) / (np.ptp(d))) * (output_high - output_low) + output_low
         return d
     
     U = normalize(U0) #rescale manifold between -1 and +1 (all axes)
@@ -164,7 +166,7 @@ for PD in range(68,totalPDs+1):
     # =========================================================================
     # MAIN LOOP: fit each manifold, project points onto fits, bin, and save
     # =========================================================================    
-    for CM in [0,1]:#range(0,totalCMs): #[0,1]
+    for CM in range(0,totalCMs): #[0,1]
         print('CM:', (CM+1))
         figIdx = 1
         # Create directory for each CM:
@@ -494,7 +496,7 @@ for PD in range(68,totalPDs+1):
             if 0: #last polygon generated in sequence before emergence of Multipolygon
                 Alpha = Alphas[-1] 
             else: #wind back for coarser polygon
-                windBack = int(len(Alphas)*.2) #may need to be adjusted; .6
+                windBack = int(len(Alphas)*.4) #may need to be adjusted; .6
                 Alpha = Alphas[-(windBack)] 
             alpha_shape = alphashape.alphashape(points_in, Alpha)
             polygonMain = Polygon(alpha_shape)

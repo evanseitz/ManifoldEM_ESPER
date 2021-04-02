@@ -5,25 +5,28 @@ from matplotlib import rc
 #matplotlib.rc('text', usetex = True)
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from pylab import imshow, show, loadtxt, axes
+from pylab import imshow, show
 import numpy as np
 from matplotlib.ticker import MaxNLocator
 import json
-
-if 1: #render with LaTeX font for figures
-    rc('text', usetex=True)
-    rc('font', family='serif')
+pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
+parDir = os.path.abspath(os.path.join(pyDir, os.pardir))
+readDir = os.path.join(parDir, '1_Embedding/DM')
+sys.path.append(readDir)
+import Read_Alignment
     
 # =============================================================================
-# Compile CM bins across all PDs as obtained in previous step (`Manifold_Binning.py`)
+# Compile 1D CM bins across all PDs as obtained in previous step (`Manifold_Binning.py`)
 # =============================================================================
 # SETUP: First, make sure all user parameters are correct for your dataset...
-#   ...below via the 'User parameters' section ('PCA' for embedding type...
-#   ...and correct input file names for directories, if altered)
+#   ...below via the 'User parameters' section. As well, ensure that the...
+#   ...'dataDir' and related path names are correct.
+#   Additionally, check the EMAN/RELION conversion protocol at the end of...
+#   ...this script to ensure the correct conventions are being applied.
 # IMPORTANT:
 #   Before running, senses and CM indices must be assigned for each PD in the...
 #   ...`3_Spline_Binning/bins_" directory. An example workflow, would include...
-#   ...manually watching each of the CM movies (6, by default, per PD) and...
+#   ...manually watching each of the 2D CM movies per PD and...
 #   ...assigning those CM movies corresponding to true CM motions an index...
 #   ...in the corresponding `CMs.txt` file as well as a sense in the corresponding...
 #   ...`Senses.txt` file. For example, if the movie for CM1 in PD001 represented...
@@ -33,83 +36,115 @@ if 1: #render with LaTeX font for figures
 #   ...of either forward (['F', ...]) or reverse (['R', ...]), making sure to keep...
 #   ...this arbitrary assignment consistent for all PDs (and all CMs therein).
 #   If a movie is not a valid motion, just leave it as an 'X' in both lists.
-# RUNNING: To run a series of PDs at once: edit PD range() below`...
-#   ...for the total number of PDs requested; e.g., range(1,6) for 5 PDs...
-#   ...then initiate batch processing via `python 1_Compile_Bins.py`
+# RUNNING: Initiate batch processing via `python 1_Compile_Bins_1D.py`
 # =============================================================================
-# Author:    E. Seitz @ Columbia University - Frank Lab - 2020
+# Author:    E. Seitz @ Columbia University - Frank Lab - 2020-2021
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
 
-pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
-parDir = os.path.abspath(os.path.join(pyDir, os.pardir))
-outDir = os.path.join(pyDir, 'S2_bins_GC3_v5')
+if 1: #render with LaTeX font for figures
+    rc('text', usetex=True)
+    rc('font', family='serif')
+    
+outDir = os.path.join(pyDir, 'S2_bins')
 if not os.path.exists(outDir):
     os.makedirs(outDir)
     
 # =============================================================================
 # User parameters
 # =============================================================================
-PCA = True #specify if manifolds from PCA or DM folder {if False, DM is True}
-totalPDs = 126
-bins = 20
-box = 250 #image dimensions
-tau = 10 #number of noisy duplicates used to create stacks (synthetic data only)
+totalPDs = 126 #total number of projection directions
+totalCMs = 2 #total number of conformational motions to consider
+bins = 20 #needs to match choice previously used in 'Manifold_Binning.py'
+box = 320 #image dimensions (i.e., box size)
 groundTruth = True #optional, for comparing final outputs with ground-truth knowldege
-R2_thresh = 0.825 #optional: skip PDs based on the current CM's parabolic fit score
+R2_skip = True #optional: skip PDs based on the current CM's parabolic fit score
+R2_thresh = 0.71 #active if 'R2_skip' is True
+printFigs = True #show figures of outputs throughout framework
+dataDir = os.path.join(parDir, '0_Data_Inputs/CTF5k15k_SNRpt1_ELS_2D') #also check stackPath and alignPath below
+
+if groundTruth is True:
+    CM1_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM1_Indices.npy'), allow_pickle=True) #view in reference frame of CM1
+    CM2_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM2_Indices.npy'), allow_pickle=True) #view in reference frame of CM2
 
 # =============================================================================
 # Main loop to compile CM bins across all PDs
 # =============================================================================
-total_CMs = 2 #total number of conformational motions to consider
-for CM in range(total_CMs): #CMs to consider
-    
-    if groundTruth is True: #optional, for comparing with ground-truth
-        states = 20
-        ss = (states**2)*tau
-        binAcc = np.zeros(shape=(bins,bins))
-        binsActual = []
-        if CM == 0:
-            low = 0
-            high = states*tau
-            for idx in range(bins):
-                binsActual.append(np.arange(low,high))
-                low += states*tau
-                high += states*tau
-        elif CM == 1:
-            Idx = 0
-            for s in range(0,states):
-                state_list = []
-                for r in range(0,states):
-                    state_list.append(np.arange(Idx,Idx+tau))
-                    Idx+=(states*tau)
-                binsActual.append([item for sublist in state_list for item in sublist])
-                Idx-=(ss-tau)
-     
+for CM in range(totalCMs): #CMs to consider
+    binAcc = np.zeros(shape=(bins,bins))
+    if CM == 0:
+        binsActual = CM1_idx
+    elif CM == 1:
+        binsActual = CM2_idx #(etc.)
+        
     R2_all = []
-    totalPDs_thresh = totalPDs #if PDs thresholded by R^2 below
     occmapAll = np.zeros(bins)
-    occmapPDs = []
-    for i in range(bins):
-        occmapPDs.append([])
+    #occmapPDs = []
+    #for b in range(bins):
+        #occmapPDs.append([])
     for b in range(bins):
         B = "{0:0=2d}".format(b+1)
         print('CM_%s, Bin_%s' % ((CM+1),B))
         cmDir = os.path.join(outDir, 'CM%s' % (CM+1))
         if not os.path.exists(cmDir):
             os.makedirs(cmDir)
-        stackOut = os.path.join(cmDir, 'CM%s_bin%s.mrcs' % ((CM+1),B))
-        if os.path.exists(stackOut):
-            os.remove(stackOut)
-        # Stack of images across S2 for each bin:
-        bin_stack = mrcfile.new_mmap(stackOut, shape=(totalPDs,box,box), mrc_mode=2, overwrite=True)
-
-        #totalPDs = 5 #ZULU
+             
+        # Initiate alignment file per bin:
+        alignOutPath = os.path.join(cmDir, 'CM%s_bin%s.star' % ((CM+1),B))
+        if os.path.exists(alignOutPath):
+            os.remove(alignOutPath)
+        binAlign_out = open(alignOutPath, 'w')
+        binAlign_out.write('# RELION; version 3.0.8\
+                        \n \
+                        \ndata_images \
+                        \n \
+                        \nloop_ \
+                        \n_rlnAngleRot #1 \
+                        \n_rlnAngleTilt #2 \
+                        \n_rlnAnglePsi #3 \
+                        \n_rlnOriginX #4 \
+                        \n_rlnOriginY #5 \
+                        \n_rlnDefocusU #6 \
+                        \n_rlnDefocusV #7 \
+                        \n_rlnVoltage #8 \
+                        \n_rlnSphericalAberration #9 \
+                        \n_rlnAmplitudeContrast #10 \
+                        \n_rlnDefocusAngle #11 \
+                        \n_rlnCtfBfactor #12 \
+                        \n_rlnPhaseShift #13 \
+                        \n_rlnDetectorPixelSize #14 \
+                        \n_rlnMagnification #15 \
+                        \n_rlnImageName #16 \
+                        \n')
+        
         for pd in range(1,totalPDs+1):
             PD = '{0:0=3d}'.format(pd)
             #print(PD_%s' % PD)
-            pdDir = os.path.join(parDir, '3_Spline_Binning/bins_PCA_GC3_v5/PD%.03d' % pd)
- 
+            pdDir = os.path.join(parDir, '3_Manifold_Binning/bins/PD%.03d' % pd)
+            
+            # =============================================================
+            # Read in initial angles and microscopy parameters used to generate PDs:
+            # =============================================================
+            origAlignPath = os.path.join(dataDir, 'Hsp2D_5k15k_PD_%s.star' % PD) #update for user location of raw data
+            orig_align = Read_Alignment.parse_star(origAlignPath)
+            # Read in microscopy parameters from PD alignment file (may need to modify below parameters to match inputs):
+            angRot = orig_align['rlnAngleRot'].values
+            angTilt = orig_align['rlnAngleTilt'].values
+            angPsi = orig_align['rlnAnglePsi'].values
+            origX = orig_align['rlnOriginX'].values
+            origY = orig_align['rlnOriginY'].values
+            dfX = orig_align['rlnDefocusU'].values
+            dfY = orig_align['rlnDefocusV'].values
+            volt = orig_align['rlnVoltage'].values
+            Cs = orig_align['rlnSphericalAberration'].values
+            ampc = orig_align['rlnAmplitudeContrast'].values
+            dfAng = orig_align['rlnDefocusAngle'].values
+            Bfact = orig_align['rlnCtfBfactor'].values
+            pShift = orig_align['rlnPhaseShift'].values
+            px = orig_align['rlnPixelSize'].values
+            imgName = orig_align['rlnImageName'].values
+            
+            # Setup to match proper CM/Sense within each PD directory: 
             with open(os.path.join(pdDir,'CMs.txt'), 'r') as read_file:
                 CM_idx = read_file.read().replace('\n', '') 
             cm_idx_list = []
@@ -131,7 +166,6 @@ for CM in range(total_CMs): #CMs to consider
             sense_idx = sense_idx_list[cm_idx]
             
             stackDir = os.path.join(pdDir, 'CM%s' % (cm_idx+1))
-            #print(pd, stackDir)
             
             # Grab coefficient of determination (R^2):
             for file in os.listdir(stackDir):
@@ -139,33 +173,32 @@ for CM in range(total_CMs): #CMs to consider
                     R2Path = os.path.join(stackDir, file)
             R2 = np.genfromtxt(R2Path, unpack=True).T
             R2_all.append(R2)
-            
             # Grab occupancy information:
             for file in os.listdir(stackDir):
                 if file.endswith('Hist.txt'):
                     occmapPath = os.path.join(stackDir, file)
             occmap = np.genfromtxt(occmapPath, unpack=True).T
+            
             # Grab stack of CM images (movie):
             for file in os.listdir(stackDir):
                 if file.endswith('.mrcs'):
-                    stackPath = os.path.join(stackDir, file)
-            init_stack = mrcfile.mmap(stackPath)
-            # Arbitrary order; valid so long as it's consistent across all PDs
+                    moviePath = os.path.join(stackDir, file)
+            movie_stack = mrcfile.mmap(moviePath)
+            # Arbitrary order; valid so long as it's consistent across all PDs:
             if sense_idx == 'F':
                 fix=0 #keep index order
             elif sense_idx == 'R':
                 fix=1 #reverse index order
-                        
-            bin_stack.data[pd-1] = init_stack.data[b-fix*(2*b+1)]
-            
-            if 1: #optional: skip PDs based on the current CM's parabolic fit score
-                if R2 < R2_thresh:
-                    if b == 0:
-                        totalPDs_thresh -= 1
-                    continue
-            
-            occmapAll[b] += occmap[b-fix*(2*b+1)]
-            occmapPDs[b].append(occmap[b-fix*(2*b+1)])
+                    
+            # Combine integrated images (as output in 'Manifold_Binning.py') across all PDs to new stack per bin...
+            # ...will need create binStack_out mrcfile first to utilize this step:
+            ###binStack_out.data[pd-1] = movie_stack.data[b-fix*(2*b+1)]
+
+            if R2_skip: #optional: skip PDs based on the current CM's parabolic fit score
+                if R2 > R2_thresh:
+                    occmapAll[b] += occmap[b-fix*(2*b+1)]
+            else:
+                occmapAll[b] += occmap[b-fix*(2*b+1)]
             
             # =================================================================
             # Retrieve image indices within each bin:
@@ -178,31 +211,42 @@ for CM in range(total_CMs): #CMs to consider
                             binPaths.append(os.path.join(stackDir, file))
             with open(binPaths[b-fix*(2*b+1)], 'r') as read_file:
                 binFile = json.load(read_file)
-              
+            
+            # =================================================================
+            # Append alignment file:
+            # =================================================================
+            for img in binFile:
+                if 1: #EMAN2 to RELION conversion
+                    angRot[img] -= 90
+                    angPsi[img] += 90
+                # Update alignment file:
+                imgNumber, imgLocation = imgName[img].split('@')
+                imgDir = imgNumber + '@' + dataDir + '/' + imgLocation                 
+                binAlign_out.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                    % (angRot[img], angTilt[img], angPsi[img], origX[img], origY[img], dfX[img], dfY[img], volt[img], Cs[img], ampc[img], dfAng[img], Bfact[img], pShift[img], px[img], 10000., str(imgDir)))
+        
+            movie_stack.close() #close up stack before next PD
+
             # =================================================================
             # Compare number of elements in trajectory-bin vs ground-truth:
             # =================================================================
             if groundTruth is True:
                 skips = np.arange(1, (bins*2)+1, 2)
-                for i in range(0,bins):
-                    binAcc[i-fix*skips[i],b] += sum(el in binFile for el in binsActual[i-fix*skips[i]]) #accuracy of single state
-                                
-            init_stack.close() #close up stack before next PD
-            
-        if 0: #plot of same-state images across S2
-            for pd in range(0,10):#totalPDs):
-                plt.imshow(bin_stack.data[pd], cmap='gray')
-                plt.title('PD%.03d' % (pd+1))
-                plt.show()
-            
-        bin_stack.close() #close up stack before next bin
-    
+                if R2_skip:
+                    if R2 > R2_thresh:
+                        for i in range(0,bins):
+                            binAcc[i-fix*skips[i],b] += sum(el in binFile for el in binsActual[i-fix*skips[i]]) #accuracy of single state
+                else:
+                    for i in range(0,bins):
+                        binAcc[i-fix*skips[i],b] += sum(el in binFile for el in binsActual[i-fix*skips[i]]) #accuracy of single state
+                    
+         
     # =========================================================================
     # Save each CM occupancy map to file:
     # =========================================================================
     np.savetxt(os.path.join(cmDir,'Occupancy_Map.txt'), occmapAll, delimiter=',', fmt='%i')
-    #print('Total Occupancy:',int(np.sum(occmapAll))) #sanity check
-        
+    print('Total Occupancy:',int(np.sum(occmapAll))) #sanity check
+            
     # Save bar chart (standard form):
     plt.bar(range(1,bins+1),occmapAll)
     plt.xlabel(r'CM$_{%s}$ State' % (CM+1), fontsize=16, labelpad=10)
@@ -211,7 +255,7 @@ for CM in range(total_CMs): #CMs to consider
     plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
     plt.gca().xaxis.set_major_locator(plt.MultipleLocator(1))
-    plt.axhline(y=tau*20*totalPDs_thresh, color='r', linewidth=2)
+    #plt.axhline(y=tau*20*totalPDs_thresh, color='r', linewidth=2)
     plt.tight_layout()
     fig = plt.gcf()
     fig.savefig(os.path.join(cmDir,'Occupancy_Sum.png'), dpi=200)
@@ -232,7 +276,7 @@ for CM in range(total_CMs): #CMs to consider
     plt.cla()
     plt.close()
         
-    if groundTruth is True: #bar chart (stacked); strictly for checking accuracy with ground-truth (if available)
+    if groundTruth is True and printFigs is True: #bar chart (stacked); strictly for checking accuracy with ground-truth (if available)
         fig = plt.figure()
         ax = plt.gca()
         x_pos = np.arange(1,bins+1)
@@ -321,13 +365,14 @@ for CM in range(total_CMs): #CMs to consider
             
         Box = ax.get_position()
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.11), fancybox=True, shadow=False, ncol=10)
-        plt.xlabel(r'CM$_{%s}$ State' % (CM+1), fontsize=16, labelpad=10)
-        plt.ylabel('Occupancy', fontsize=16, labelpad=10)
+        plt.xlabel(r'CM$_{%s}$ State' % (CM+1), fontsize=18, labelpad=10)
+        plt.ylabel('Occupancy', fontsize=18, labelpad=10)
         plt.xlim(0.25, bins+.75)
-        plt.ylim(0, (np.amax(occmapAll)+.01*np.amax(occmapAll)))
+        plt.ylim(0, (np.amax(occmapAll)+.02*np.amax(occmapAll)))
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
         plt.gca().xaxis.set_major_locator(plt.MultipleLocator(1))
-        plt.axhline(y=tau*20*totalPDs, color='k', linewidth=1.5)
+        #plt.axhline(y=tau*20*totalPDs, color='k', linewidth=1.5)
+        plt.subplots_adjust(left=0.075, right=0.415, bottom=0.075, top=0.45, wspace=0.2, hspace=0.2)
         plt.show()
         plt.clf()
