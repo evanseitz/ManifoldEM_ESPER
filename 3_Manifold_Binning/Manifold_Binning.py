@@ -530,8 +530,8 @@ for PD in range(1,totalPDs+1):
                 base_alphaX, base_alphaY = boundary_both.xy
             
             base_alphaY = np.array(base_alphaY)[0]
+            base_alphaY0 = base_alphaY #save copy
             if CTF is True:
-                base_alphaY0 = base_alphaY #save copy
                 base_alphaY = (np.arccos(0) + base_alphaY)/2. #needed if 'CTF' is True
                 if R2 < R2_thresh: #alternative fit required if suboptimal least-squares conic fit detected; see previous use above as well
                     if face == 'down':
