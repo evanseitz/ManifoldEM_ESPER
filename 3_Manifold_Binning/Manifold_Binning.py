@@ -539,11 +539,11 @@ for PD in range(1,totalPDs+1):
             base_alphaY0 = base_alphaY #save copy
             if CTF is True:
                 base_alphaY = (np.arccos(0) + base_alphaY)/2. #needed if 'CTF' is True
-                if R2 < R2_thresh: #alternative fit required if suboptimal least-squares conic fit detected; see previous use above as well
-                    if face == 'down':
-                        base_alphaY = -np.pi
-                    elif face == 'up':
-                        base_alphaY = np.pi*2
+            if R2 < R2_thresh: #alternative fit required if suboptimal least-squares conic fit detected; see previous use above as well
+                if face == 'down':
+                    base_alphaY = -np.pi
+                elif face == 'up':
+                    base_alphaY = np.pi*2
             
             # Given Alpha shape boundaries, crop previous fits:         
             fit2_x = []
