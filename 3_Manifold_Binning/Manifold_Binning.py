@@ -441,8 +441,14 @@ for PD in range(1,totalPDs+1):
             final_tree = tree.query_ball_tree(tree, r=.06, p=2.0, eps=0) #r: max radius
             inliers = []
             outliers = []
+            # Tree threshold may need to be adjusted based on point-cloud spread:
+            if CTF is True:
+                tree_thresh = 10 
+            else:
+                tree_thresh = 15
+            
             for i in final_tree:
-                if len(i) > 10: #15; may need to adjust based on dataset noise
+                if len(i) > tree_thresh:
                     for j in i:
                         inliers.append(j)
                 else:
