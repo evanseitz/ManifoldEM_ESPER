@@ -376,7 +376,7 @@ for CM in range(totalCMs): #CMs to consider
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
         plt.gca().xaxis.set_major_locator(plt.MultipleLocator(1))
-        #plt.axhline(y=tau*20*totalPDs, color='k', linewidth=1.5)
+        #plt.axhline(y=tau*20*totalPDs_thresh, color='k', linewidth=1.5)
         plt.subplots_adjust(left=0.075, right=0.415, bottom=0.075, top=0.45, wspace=0.2, hspace=0.2)
         plt.show()
         plt.clf()
