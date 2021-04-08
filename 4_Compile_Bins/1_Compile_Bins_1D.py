@@ -78,6 +78,7 @@ for CM in range(totalCMs): #CMs to consider
         binsActual = CM2_idx #(etc.)
         
     R2_all = []
+    totalPDs_thresh = totalPDs #if PDs thresholded by R^2 below (used for uniform distributions only)
     occmapAll = np.zeros(bins)
     #occmapPDs = []
     #for b in range(bins):
@@ -236,6 +237,9 @@ for CM in range(totalCMs): #CMs to consider
                     if R2 > R2_thresh:
                         for i in range(0,bins):
                             binAcc[i-fix*skips[i],b] += sum(el in binFile for el in binsActual[i-fix*skips[i]]) #accuracy of single state
+                    else:
+                        if b == 0:
+                            totalPDs_thresh -=1
                 else:
                     for i in range(0,bins):
                         binAcc[i-fix*skips[i],b] += sum(el in binFile for el in binsActual[i-fix*skips[i]]) #accuracy of single state
