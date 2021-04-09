@@ -270,7 +270,7 @@ for CM in range(totalCMs): #CMs to consider
     
     # Save R2 histogram:
     plt.hist(np.asarray(R2_all), bins=np.linspace(0,1,40), edgecolor='black')
-    plt.xlabel('Coefficient of Determination')
+    plt.xlabel(r'Coefficient of Determination ($R^2$)')
     plt.ylabel('PDs')
     plt.tight_layout()
     fig = plt.gcf()

@@ -788,9 +788,9 @@ for PD in range(1,totalPDs+1):
                     ratio = r/(Bins/2.)
                     ratio_idx = find_nearest_val(polyAreaRatios, ratio)
                     binEdgesCoords.append(lineCrosses[ratio_idx])
-            else: #slightly less area for bin closest to center due to increased outlier trend; experimental!
+            else: #slightly less area for bin closest to center due to increased outlier trend; tuning based on uniform ground-truth studies
                 #eps = .0015
-                eps = (.905/((Bins/2)-1) - (1/(Bins/2)))
+                eps = (.91/((Bins/2)-1) - (1/(Bins/2))) #.905
                 ratio = (1/(Bins/2.)) + eps
                 ratioCurr = ratio
                 for r in range(1,int((Bins/2))):
