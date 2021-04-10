@@ -1,11 +1,21 @@
-#run via: 'chimera 2_GenMovie.py'
-session = 'view4' #name of session saved in Chimera (e.g., 'view1' for view1.py)
-
-################################################################################
-# GENERATE CHIMERA MOVIE #
-################################################################################
 import os
 from chimera import runCommand as rc
+
+# =============================================================================
+# Generate 3D Movies in Chimera (run via `chimera 2_GenMovie.py`)
+# =============================================================================
+# SETUP: First, make sure your session has been saved via the previous script...
+#   ...'Chimera_1_CreateSession.py'. Next, input that session name for the...
+#   ...'session' variable below.
+# RUNNING: After opening with Chimera, you can optionally change the camera...
+#   ...view. When finalized, save the Chimera session via 'Save Session As'.
+# =============================================================================
+# Author:    E. Seitz @ Columbia University - Frank Lab - 2020-2021
+# Contact:   evan.e.seitz@gmail.com
+# =============================================================================
+
+
+session = 'view1' #name of session saved in Chimera (e.g., 'view1' for view1.py)
 
 pyDir = os.path.dirname(os.path.abspath(__file__)) #python file location
 projDir = os.path.join(pyDir, '%s' % session)
