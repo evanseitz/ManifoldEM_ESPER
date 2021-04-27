@@ -1,18 +1,18 @@
 # README
-## Cryo-EM Heuristic Analysis
+## ManifoldEM: Direct Manifold Subspace Analysis (DMSA)
 
-This repository contains the software implementation for our paper **Heuristic Analysis of Manifolds from Simulated Cryo-EM Ensemble Data** (Seitz, Schwander, Acosta-Reyes, Maji, Liao, Frank). It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
+This repository contains the software implementation for our paper **Retrieval of structures from a continuum of states captured by cryo-EM: Lessons from manifold embedding of simulated ground-truth data** (Seitz, Schwander, Acosta-Reyes, Maji, Liao, Frank). It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
 
 The algorithms presented here in their current form are developed for analyzing synthetic data. Custom synthetic datasets can be generated as described in our supplementary materials. Additional information can also be found in our [previous paper](https://www.biorxiv.org/content/10.1101/864116v1): **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank); along with detailed code in the corresponding [repository](https://github.com/evanseitz/cryoEM_synthetic_continua).
 
-Please note that additional alterations to this code will be required to make this workflow fully accessible to experimentally-obtained data. To note, much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite. To note, our workflow presented here branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed.
+Please note that additional alterations to this code will be required to make this workflow fully accessible to experimentally-obtained data. To note, much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite. The workflow presented here branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed. As discussed in our paper, there also exists the possibility of combining these two techniques, with their use based on the quality of each PD-manifold.
 
 ## Instructions:
 
 ### Environment:
 First, install [Anaconda](https://docs.anaconda.com/anaconda/install). Additionally, LaTex can be installed, e.g. via [TeX Live](https://tug.org/texlive)... if not, syntax for figure generation in these scripts will need to be individually altered. Next, with Anaconda sourced, create a new Anaconda environment:
 
-`condo create -n Manifold python=3`
+`condo create -n DMSA python=3`
 
 Next, activate this environment via `condo activate Manifold`, and install the following packages:
 
@@ -26,10 +26,10 @@ Next, activate this environment via `condo activate Manifold`, and install the f
 - `conda config --set channel_priority strict`
 - `conda install alphashape`
 - `conda install -c conda-forge descartes`
-- `pip install qiskit` #installs sympy
+- `pip install qiskit`
 - `pip install latex` #if texlive installed above
 
-Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command: `conda activate Manifold`
+Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command: `conda activate DMSA`
 
 When you are done using the environment, always exit via: `conda deactivate`
 
