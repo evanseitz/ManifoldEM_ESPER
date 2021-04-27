@@ -59,9 +59,17 @@ CM1 = 1 #first CM
 CM2 = 2 #second CM
 bins = 20 #needs to match choice previously used in 'Manifold_Binning.py'
 box = 320 #image dimensions (i.e., box size)
+groundTruth = False #optional, for comparing final outputs with ground-truth knowldege
 R2_skip = True #optional: skip PDs based on the current CM's parabolic fit score
-R2_thresh = 0.71 #active if 'R2_skip' is True
-dataDir = os.path.join(parDir, '0_Data_Inputs/CTF5k15k_SNRpt1_ELS_2D') #also check paths below
+R2_thresh = 0.7 #active if 'R2_skip' is True
+dataDir = os.path.join(parDir, '0_Data_Inputs/_CTF5k15k_SNRpt1_ELS_GC1_2D') #also check paths below
+
+if groundTruth is True: #analyze total True Positives
+    occmap2D_GT = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/Occ2D_4k.npy'))
+    occmap2D_GT.astype(int)
+    occmap2D_accuracy = np.zeros(shape=(bins,bins), dtype=float)
+    CM1_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM1_Indices.npy'), allow_pickle=True) #view in reference frame of CM1
+    CM2_idx = np.load(os.path.join(parDir, '0_Data_Inputs/GroundTruth_Indices/CM2_Indices.npy'), allow_pickle=True) #view in reference frame of CM2
 
 # =============================================================================
 # Initiate empty 2D occupancy map:
@@ -77,8 +85,6 @@ for CM_i in states_list:
         print('CM%s_%s, CM%s_%s' % (CM1, CM_i, CM2, CM_j))
         CM_i_idx = "{0:0=2d}".format(CM_i)
         CM_j_idx = "{0:0=2d}".format(CM_j)
-        
-
         
         # =============================================================================
         # Initiate each STAR file:
@@ -216,6 +222,11 @@ for CM_i in states_list:
             
             intersect = list(set(binFile_CM_i) & set(binFile_CM_j))
             occmap2D[CM_j-1, CM_i-1] += len(intersect)
+            
+            if groundTruth is True:
+                intersect_GT = list(set(CM1_idx[CM_i-1]) & set(CM2_idx[CM_j-1]))                            
+                intersect_DMSA_GT = list(set(intersect) & set(intersect_GT))                
+                occmap2D_accuracy[CM_j-1, CM_i-1] += len(intersect_DMSA_GT)
 
             if R2_skip is True: #only affects occupancies while preserving all images
                 if cm_i_R2 < R2_thresh or cm_j_R2 < R2_thresh:
@@ -259,4 +270,19 @@ plt.tight_layout()
 fig = plt.gcf()
 fig.savefig(os.path.join(cmDir,'Occupancy_Map.png'), dpi=200)
 np.save(os.path.join(cmDir,'Occupancy_Map.npy'), occmap2D)
-plt.show()
+#plt.show()
+
+if groundTruth is True:
+    if 0: #convert to ratios
+        occmap2D_accuracy = occmap2D_accuracy / (occmap2D_GT*126.)
+    plt.clf()
+    plt.imshow(occmap2D_accuracy, origin='lower', interpolation='nearest', aspect='equal', extent=[.5,20.5,.5,20.5], cmap='viridis')
+    plt.xlabel('CM 1', fontsize=14, labelpad=10)
+    plt.ylabel('CM 2', fontsize=14, labelpad=10)
+    plt.xticks([1,5,10,15,20])
+    plt.yticks([1,5,10,15,20])
+    plt.tight_layout()
+    plt.colorbar()
+    plt.clim(0,np.amax(occmap2D_accuracy))
+    plt.tight_layout()
+    plt.show()
