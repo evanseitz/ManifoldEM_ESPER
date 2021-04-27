@@ -13,7 +13,7 @@ for filename in *.star
 do
     echo "input: $filename"
     echo "output: ${scriptDir}/${filename%.*}.mrc"
-    relion_reconstruct --i "${filename}" --o "${scriptDir}/${filename%.*}.mrc" --ctf --maxres 3
+    relion_reconstruct --i "${filename}" --o "${scriptDir}/${filename%.*}.mrc" --ctf #--maxres 3
 done
 
 cd ..
@@ -24,5 +24,5 @@ for filename in *.star
 do
     echo "input: $filename"
     echo "output: ${scriptDir}/${filename%.*}.mrc"
-    relion_reconstruct --i "${filename}" --o "${scriptDir}/${filename%.*}.mrc" --ctf --maxres 3
+    relion_reconstruct --i "${filename}" --o "${scriptDir}/${filename%.*}.mrc" --ctf #--maxres 3
 done
