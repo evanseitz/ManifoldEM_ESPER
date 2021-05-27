@@ -7,8 +7,10 @@ from scipy.fftpack import ifftshift
 # From Kirkland, adapted for cryo (EMAN1) by P. Schwander
 # Version V 1.1
 # Copyright (c) UWM, Peter Schwander 2010 MATLAB version
-# Copyright (c) Columbia University Hstau Liao 2018 (python version)
-# Copyright (c) Columbia University Evan Seitz; Frank Lab 2021 (revised python version) 
+# History:   See ManifoldEM Matlab repository for syntax parallels. As well, a similar...
+#            ...workflow will be publically released via the ManifoldEM Python suite...
+#            ...(estimated 2021) with that code translated from Matlab to Python...
+#            ...by H. Liao (CU, 2019) and modified therein by E. Seitz (CU, 2020).
 # =============================================================================
 # NOTES:
 # Here, the damping envelope is characterized by a single parameter B 
@@ -55,7 +57,7 @@ def op(k, params):
    y = (np.sin(wr)-ampc*np.cos(wr))*wi
    return y
 
-def gen_ctf(N, px, Cs, df, volt, B, ampc): #N:box size; pix_size: pixel size [A]; s
+def gen_ctf(N, px, Cs, df, volt, B, ampc):
     # ========================================================================
     # Inputs:
     # ========================================================================

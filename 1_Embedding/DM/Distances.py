@@ -28,8 +28,11 @@ import Generate_Filters
 #   ...then start batch processing via 'sh 1_Dist_Batch.sh'
 # =============================================================================
 # Authors:   E. Seitz @ Columbia University - Frank Lab - 2021
-# History:   H. Liao (CU, 2019); P. Schwander (UWM, 2019); A. Dashti (UWM, 2016)
-#            See ManifoldEM Python/Matlab 2020-2021: i.e., GetDistances.py
+# History:   P. Schwander (UWM, 2019); A. Dashti (UWM, 2016)
+#            See ManifoldEM Matlab repository for syntax parallels. As well, a similar...
+#            ...workflow will be publically released via the ManifoldEM Python suite...
+#            ...(estimated 2021) with that code translated from Matlab to Python...
+#            ...by H. Liao (CU, 2019) and modified therein by E. Seitz and S. Maji (CU, 2020).
 # Contact:   evan.e.seitz@gmail.com
 # =============================================================================
 
@@ -66,7 +69,7 @@ def op(pyDir, PD):
         volt = starFile['rlnVoltage'].values
         Cs = starFile['rlnSphericalAberration'].values
         ampc = starFile['rlnAmplitudeContrast'].values
-        px = starFile['rlnPixelSize'].values
+        pix = starFile['rlnPixelSize'].values
         
     PD_stack = mrcfile.mmap(stackPath, 'r')
     nS, N, N = PD_stack.data.shape #number of snapshots; boxsize; boxsize
@@ -102,36 +105,34 @@ def op(pyDir, PD):
 
         
     elif CTF is True:
-        y = np.zeros((N**2, nS)) #each row is a flattened image
-        fy = complex(0)*np.ones((nS,N,N)) #each (i,:,:) is a Fourier image
-        CTF = np.zeros((nS,N,N)) #each (i,:,:) is the CTF
+        y = np.zeros((N**2, nS)) # each one of the rows is a flattened image
+        fy = complex(0)*np.ones((nS,N,N)) # each of the [i,:,:] is a Fourier image
+        CTF = np.zeros((nS,N,N)) # each of the [i,:,:] is the CTF
         
         print('Generating filters...')
-        for iS in range(nS):
-            tmp = PD_stack.data[iS]
+        for ii in range(nS):
+            tmp = PD_stack.data[ii]
             tmp = (tmp - tmp.mean())/tmp.std()
-            y[:,iS] = tmp.flatten('F') #normalized image
+            y[:,ii] = tmp.flatten('F') #normalized image
             # Create CTF and Butterworth filter:
-            CTF[iS,:,:], G = Generate_Filters.gen_ctf(N, px[iS], Cs[iS], df[iS], volt[iS], np.inf, ampc[iS])
+            CTF[ii,:,:], G = Generate_Filters.gen_ctf(N, pix[ii], Cs[ii], df[ii], volt[ii], np.inf, ampc[ii])
             G = G.astype(float)
             # Apply Butterworth filter:
-            image = y[:,iS].reshape(-1,N).transpose()
+            image = y[:,ii].reshape(-1,N).transpose()
             image = ifft2(fft2(image)*G).real
             # Round up files:
-            y[:,iS] = image.real.flatten('F')
-            fy[iS,:,:] = fft2(y[:,iS].reshape(-1,N))
-            imgAll[iS,:,:] = y[:,iS].reshape(-1,N).transpose()
+            y[:,ii] = image.real.flatten('F')
+            fy[ii,:,:] = fft2(y[:,ii].reshape(-1,N))
+            imgAll[ii,:,:] = y[:,ii].reshape(-1,N).transpose()
         
         print('Performing CTF correction...')
-        #imgAvg = 0
-        wiener_dom = -gen_wiener(CTF)
-        for iS in range(nS):
-            img =  imgAll[iS,:,:]
+        wienerD = -gen_wiener(CTF)
+        for ii in range(nS):
+            img =  imgAll[ii,:,:]
             img_f = fft2(img)
-            CTF_i = CTF[iS,:,:]
-            img_f_wiener = img_f*(CTF_i/wiener_dom)
-            wiener_stack.data[iS] = ifft2(img_f_wiener).real
-            #imgAvg = imgAvg + ifft2(img_f_wiener).real
+            CTF_i = CTF[ii,:,:]
+            img_f_wiener = img_f*(CTF_i/wienerD)
+            wiener_stack.data[ii] = ifft2(img_f_wiener).real
 
         # Compute distances using defocus-tolerant kernel:
         print('Computing distances...')
@@ -152,11 +153,11 @@ def op(pyDir, PD):
 
 def gen_wiener(CTF1):
     SNR = 5
-    wiener_dom = 0.
+    wienerD = 0.
     for i in range(CTF1.shape[0]):
-        wiener_dom = wiener_dom + CTF1[i, :, :]**2
-    wiener_dom = wiener_dom + 1. / SNR
-    return (wiener_dom)
+        wienerD = wienerD + CTF1[i, :, :]**2
+    wienerD = wienerD + 1. / SNR
+    return (wienerD)
 
         
 if __name__ == '__main__':
