@@ -49,6 +49,13 @@ If this code is useful in your work, please cite:
 DOI
 
 ### License:
-Copyright 2018-2021 Evan Seitz
+Copyright (C) 2018-2021 Evan Seitz
+CU/UWM *ManifoldEM team* (alphabetically ordered):
+
+Acosta-Reyes, Francisco; Columbia University Medical Center
+Frank, Joachim; Columbia University / Columbia University Medical Center
+Maji, Suvrajit; Columbia University Medical Center
+Schwander, Peter; University of Wisconsin Milwaukee
+Seitz, Evan; Columbia University
 
 The software, code sample and their documentation made available on this website could include technical or other mistakes, inaccuracies or typographical errors. We may make changes to the software or documentation made available on its web site at any time without prior notice. We assume no responsibility for errors or omissions in the software or documentation available from its web site. For further details, please see the LICENSE file.
