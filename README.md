@@ -51,7 +51,7 @@ DOI
 ### License:
 Copyright (C) 2018-2021 Evan Seitz
 
-CU/UWM *ManifoldEM team* (alphabetically ordered):
+CU/UWM *ManifoldEM DMSA team* (alphabetically ordered):
 - Acosta-Reyes, Francisco; Columbia University Medical Center
 - Frank, Joachim; Columbia University / Columbia University Medical Center
 - Maji, Suvrajit; Columbia University Medical Center
