@@ -29,7 +29,7 @@ Next, activate this environment via `condo activate DMSA`, and install the follo
 - `pip install qiskit`
 - `pip install latex` #if texlive installed above
 
-LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command: `conda activate DMSA`. When you are done using the environment, always exit via: `conda deactivate`
+LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command `conda activate DMSA`. When you are done using the environment, always exit via `conda deactivate`.
 
 ### Additional Software:
 In addition to the Anaconda environment detailed above, the following packages may also prove useful; some of which are required for final steps in this framework.
