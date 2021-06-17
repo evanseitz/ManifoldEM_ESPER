@@ -1,11 +1,11 @@
 # README
 ## ManifoldEM: Direct Manifold Subspace Analysis (DMSA)
 
-This repository contains the software implementation for our paper **Retrieval of structures from a continuum of states captured by cryo-EM: Optimization of ManifoldEM informed by ground-truth data** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
+This repository contains the software implementation for our paper **Recovery of conformational continuum from single-particle cryo-EM data: Optimization of ManifoldEM informed by ground-truth studies** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
 
 The algorithms presented here in their current form are developed for analyzing synthetic data. Custom synthetic datasets can be generated as described in our supplementary materials. Additional information can also be found in our [previous paper](https://www.biorxiv.org/content/10.1101/864116v1): **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank); along with detailed code in the corresponding [repository](https://github.com/evanseitz/cryoEM_synthetic_continua).
 
-Please note that additional alterations to this code will be required to make this workflow fully accessible to experimentally-obtained data. Much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the ManifoldEM suite. The workflow presented here branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed. As discussed in our paper, there also exists the possibility of combining these two techniques, with a decision made for their use based on the quality of each PD-manifold.
+Please note that additional alterations to this code will be required to make this workflow fully accessible to experimentally-obtained data. Much of the code necessary for processing and organizing such data into projection directions is already available in the first half of the founding [ManifoldEM suite](https://github.com/GMashayekhi/ManifoldEM_Matlab), with a Python implementation and comprehensive GUI currently in late-stage production. The workflow presented here branches off from the current ManifoldEM framework permanently after manifolds are created via Diffusion Maps and immediately before NLSA is performed. As discussed in our paper, there also exists the possibility of combining these two techniques, with a decision made for their use based on the quality of each PD-manifold.
 
 ## Instructions:
 
@@ -42,11 +42,11 @@ In addition to the Anaconda environment detailed above, the following packages m
 - RELION
 
 ### Usage:
-Detailed instructions and comments for all procedures are provided in the code. Within this repository, we have also supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the `Pristine_AddNoiseTau` folder, as well as CTF via scripts in the `Pristine_AddCtfSNR` folder. A collection of manifolds are also provided in the `PCA/Data_Manifolds_126` folder so that users can jump straight in to experimenting with several of our downstream algorithms. These manifolds have been generated using 126 PDs with two degrees of freedom, with images uniformly duplicated and modified with experimentally-relevant SNR. 
+Detailed instructions and comments for all procedures are provided in the code. Within this repository, we have also supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the `Pristine_AddNoiseTau` folder, as well as CTF via scripts in the `Pristine_AddCtfSNR` folder. A collection of manifolds are also provided in the `PCA/Data_Manifolds_126` folder so that users can jump straight in to experimenting with several of our downstream algorithms. These manifolds have been generated using 126 PDs with two degrees of freedom, with images uniformly duplicated (𝜏 = 5) and modified with experimentally-relevant SNR.
 
 ## Attribution:
 If this code is useful in your work, please cite: 
-DOI
+(DOI to be furnished)
 
 ### License:
 Copyright (C) 2018-2021 Evan Seitz
