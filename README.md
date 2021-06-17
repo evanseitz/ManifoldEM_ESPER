@@ -14,7 +14,7 @@ First, install [Anaconda](https://docs.anaconda.com/anaconda/install), and with 
 
 `condo create -n DMSA python=3`
 
-Next, activate this environment via `condo activate Manifold`, and install the following packages:
+Next, activate this environment via `condo activate DMSA`, and install the following packages:
 
 - `pip install numpy`
 - `pip install matplotlib`
@@ -29,9 +29,7 @@ Next, activate this environment via `condo activate Manifold`, and install the f
 - `pip install qiskit`
 - `pip install latex` #if texlive installed above
 
-LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command: `conda activate DMSA`
-
-When you are done using the environment, always exit via: `conda deactivate`
+LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command: `conda activate DMSA`. When you are done using the environment, always exit via: `conda deactivate`
 
 ### Additional Software:
 In addition to the Anaconda environment detailed above, the following packages may also prove useful; some of which are required for final steps in this framework.
