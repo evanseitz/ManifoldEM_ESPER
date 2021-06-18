@@ -27,7 +27,7 @@ Next, activate this environment via `condo activate DMSA`, and install the follo
 - `conda install alphashape`
 - `conda install -c conda-forge descartes`
 - `pip install qiskit`
-- `pip install latex` #if texlive installed above
+- `pip install latex` #if texlive installed (see below)
 
 LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command `conda activate DMSA`. When you are done using the environment, always exit via `conda deactivate`.
 
