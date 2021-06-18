@@ -44,7 +44,7 @@ Detailed instructions and comments for all procedures are provided in the code. 
 
 ## Attribution:
 If this code is useful in your work, please cite: 
-(DOI to be furnished)
+[![DOI](https://zenodo.org/badge/226411647.svg)](https://zenodo.org/badge/latestdoi/226411647)
 
 ### License:
 Copyright (C) 2018-2021 Evan Seitz
