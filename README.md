@@ -43,7 +43,8 @@ In addition to the Anaconda environment detailed above, the following packages m
 Detailed instructions and comments for all procedures are provided in the code. Within this repository, we have also supplied a sample of pristine data that can be experimented with in the `0_Data_Inputs` folder. This example data can be further altered with additive Gaussian noise and introduction of noisy-duplicates via scripts in the `Pristine_AddNoiseTau` folder, as well as CTF via scripts in the `Pristine_AddCtfSNR` folder. A collection of manifolds are also provided in the `PCA/Data_Manifolds_126` folder so that users can jump straight in to experimenting with several of our downstream algorithms. These manifolds have been generated using 126 PDs with two degrees of freedom, with images uniformly duplicated (𝜏 = 5) and modified with experimentally-relevant SNR.
 
 ## Attribution:
-If this code is useful in your work, please cite: 
+If this code is useful in your work, please cite:
+
 [![DOI](https://zenodo.org/badge/226411647.svg)](https://zenodo.org/badge/latestdoi/226411647)
 
 ### License:
