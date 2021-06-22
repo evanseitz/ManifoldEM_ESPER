@@ -53,14 +53,14 @@ def op(pyDir, PD):
     X_std = StandardScaler().fit_transform(flat_stack)
     
     # The two options below perform identically for noisy datasets; if the...
-    # ...standard approach (second option) is used, will need to ignore...
-    # ...steady-state eigenvector, as is done in DM:
-    if 1: 
+    # ...second option is used, will need to ignore the steady-state...
+    # ...(leading) eigenvector, as is similarly done in DM:
+    if 1: #standardize each pixel-column individually
         X_std = StandardScaler().fit_transform(flat_stack)
         print(np.mean(X_std))
         print(np.std(X_std))
         
-    else: #standard standardization
+    else: #standardize each image-row individually
         for i in range(ss):
             mu, sigma = flat_stack[i,:].mean(), flat_stack[i,:].std()
             flat_stack[i,:] -= mu
