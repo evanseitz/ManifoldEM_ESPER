@@ -81,11 +81,10 @@ def op(pyDir, PD):
     print('Preparing images...')
     D = np.zeros((nS,nS)) #distance matrix
     imgAll = np.zeros((nS,N,N))
-    wiener_stack = mrcfile.new_mmap(wienerOut, shape=(nS,N,N), mrc_mode=2, overwrite=True) #mrc_mode 2: float32
+    if CTF is True:
+       wiener_stack = mrcfile.new_mmap(wienerOut, shape=(nS,N,N), mrc_mode=2, overwrite=True) #mrc_mode 2: float32
 
     if CTF is False:
-        # Note: if using synthetic data, mean image subtraction is enough (center...
-        # ...the values to 0) since values have the same scale to begin with (0-255).
         for i in range(0,nS):
             image = PD_stack.data[i]/1.
             image -= image.mean()
@@ -149,7 +148,8 @@ def op(pyDir, PD):
     print('Distances complete.')
     
     PD_stack.close()
-    wiener_stack.close()
+    if CTF is True:
+        wiener_stack.close()
 
 
 def gen_wiener(CTF1):
