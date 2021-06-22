@@ -98,6 +98,8 @@ def op(pyDir, PD):
             plt.show()
         if 0: #save Gaussian Bandwidth plot to file
             np.save('GaussianBandwidth_PD%s.npy' % PD, [logEps, logSumWij])
+        plt.clf()
+
     else: #manually input different epsilon (trial and error) if manifolds generated with above methods not converged
         eps = 2e9 #1e4 #as an example, 1e4 worked for our {tau=1, SNR=inf} (pristine) datasets; while 1e9 could be used for datasets with CTF
     
