@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler
 def op(pyDir, PD):
     parDir1 = os.path.abspath(os.path.join(pyDir, os.pardir))
     parDir2 = os.path.abspath(os.path.join(parDir1, os.pardir))
-    dataDir = os.path.join(parDir2, '0_Data_Inputs/Pristine_2D')
+    dataDir = os.path.join(parDir2, '0_Data_Inputs/_Pristine_2D')
     outDir = os.path.join(pyDir, 'Data_Manifolds')
     if not os.path.exists(outDir):
         os.makedirs(outDir)
@@ -43,34 +43,19 @@ def op(pyDir, PD):
     # =========================================================================
     dataPath = os.path.join(dataDir, 'PD_%s.mrcs' % PD)
     init_stack = mrcfile.mmap(dataPath)
-    ss, box, box = init_stack.data.shape
-        
-    flat_stack = np.ndarray(shape=(ss, box**2), dtype=float)  
-    for i in range(0,ss):
-        flat_stack[i] = init_stack.data[i].flatten()
-        
-    print('Flattened stack dim:', np.shape(flat_stack))
-    X_std = StandardScaler().fit_transform(flat_stack)
+    N, box, box = init_stack.data.shape #N total images
+    P = box**2 #total pixels per image
     
-    # The two options below perform identically for noisy datasets; if the...
-    # ...second option is used, will need to ignore the steady-state...
-    # ...(leading) eigenvector, as is similarly done in DM:
-    if 1: #standardize each pixel-column individually
-        X_std = StandardScaler().fit_transform(flat_stack)
-        print(np.mean(X_std))
-        print(np.std(X_std))
+    Y = np.ndarray(shape=(P,N), dtype=float)  
+    for i in range(0,N):
+        Y[:,i] = init_stack.data[i].flatten()
         
-    else: #standardize each image-row individually
-        for i in range(ss):
-            mu, sigma = flat_stack[i,:].mean(), flat_stack[i,:].std()
-            flat_stack[i,:] -= mu
-            flat_stack[i,:] /= sigma
-        print(np.mean(flat_stack))
-        print(np.std(flat_stack))
-        X_std = flat_stack
+    mean_all = np.mean(Y, axis=1) #[dim P]
+    for i in range(N):
+        Y[:,i] -= mean_all        
         
     print('Computing SVD...')
-    u,s,v = np.linalg.svd(X_std.T, full_matrices=False)
+    u,s,v = np.linalg.svd(Y, full_matrices=False)
     print('SVD complete')
     eig_vals = s**2
     eig_vecs = u
@@ -78,11 +63,11 @@ def op(pyDir, PD):
     # =========================================================================
     # Project data into principal components
     # =========================================================================
-    dim = 15 #number of dimensions to consider
-    W = np.hstack([eig_vecs[:,i].reshape(box**2,1) for i in range(dim)])
-    Y = X_std.dot(W)
+    dim = 20 #number of dimensions to consider
+    W = np.hstack([eig_vecs[:,i].reshape(P,1) for i in range(dim)])
+    U = Y.T.dot(W)
     
-    np.save(os.path.join(outDir, 'PD_%s_vec.npy' % PD), Y)
+    np.save(os.path.join(outDir, 'PD_%s_vec.npy' % PD), U)
     np.save(os.path.join(outDir, 'PD_%s_val.npy' % PD), eig_vals)
         
     init_stack.close()
