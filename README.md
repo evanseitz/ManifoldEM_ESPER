@@ -1,7 +1,7 @@
 # README
-## ManifoldEM: ESPER
+## ManifoldEM: Embedded Subspace Partitioning and Eigenfunction Realignment (ESPER)
 
-This repository contains the software implementation for our [paper](https://www.biorxiv.org/content/10.1101/2021.06.18.449029v1) **Recovery of conformational continuum from single-particle cryo-EM data: Optimization of ManifoldEM informed by ground-truth studies** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed method ESPER (Embedded Subspace Partitioning and Eigenfunction Realignment) to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
+This repository contains the software implementation for our [paper](https://www.biorxiv.org/content/10.1101/2021.06.18.449029v1) **Recovery of conformational continuum from single-particle cryo-EM data: Optimization of ManifoldEM informed by ground-truth studies** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed method ESPER to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
 
 The algorithms presented here in their current form are developed for analyzing synthetic data. Custom synthetic datasets can be generated as described in our supplementary materials. Additional information can also be found in our [previous paper](https://www.biorxiv.org/content/10.1101/864116v1): **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank); along with detailed code in the corresponding [repository](https://github.com/evanseitz/cryoEM_synthetic_continua).
 
