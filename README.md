@@ -1,7 +1,7 @@
 # README
-## ManifoldEM: Direct Manifold Subspace Analysis (DMSA)
+## ManifoldEM: ESPER
 
-This repository contains the software implementation for our [paper](https://www.biorxiv.org/content/10.1101/2021.06.18.449029v1) **Recovery of conformational continuum from single-particle cryo-EM data: Optimization of ManifoldEM informed by ground-truth studies** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed methods to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
+This repository contains the software implementation for our [paper](https://www.biorxiv.org/content/10.1101/2021.06.18.449029v1) **Recovery of conformational continuum from single-particle cryo-EM data: Optimization of ManifoldEM informed by ground-truth studies** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed method ESPER (Embedded Subspace Partitioning and Eigenfunction Realignment) to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
 
 The algorithms presented here in their current form are developed for analyzing synthetic data. Custom synthetic datasets can be generated as described in our supplementary materials. Additional information can also be found in our [previous paper](https://www.biorxiv.org/content/10.1101/864116v1): **Simulation of Cryo-EM Ensembles from Atomic Models of Molecules Exhibiting Continuous Conformations** (Seitz, Acosta-Reyes, Schwander, Frank); along with detailed code in the corresponding [repository](https://github.com/evanseitz/cryoEM_synthetic_continua).
 
@@ -12,9 +12,9 @@ Please note that additional alterations to this code will be required to make th
 ### Environment:
 First, install [Anaconda](https://docs.anaconda.com/anaconda/install), and with Anaconda sourced, create a new Anaconda environment:
 
-`condo create -n DMSA python=3`
+`condo create -n ESPER python=3`
 
-Next, activate this environment via `condo activate DMSA`, and install the following packages:
+Next, activate this environment via `condo activate ESPER`, and install the following packages:
 
 - `pip install numpy`
 - `pip install matplotlib`
@@ -29,7 +29,7 @@ Next, activate this environment via `condo activate DMSA`, and install the follo
 - `pip install qiskit`
 - `pip install latex` #if texlive installed (see below)
 
-LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command `conda activate DMSA`. When you are done using the environment, always exit via `conda deactivate`.
+LaTex can be additionally installed (e.g. via [TeX Live](https://tug.org/texlive)); if not, syntax for figure generation in these scripts will need to be individually altered. Once these packages are installed within the Anaconda environment, the environment must be initiated each time before running these scripts via the command `conda activate ESPER`. When you are done using the environment, always exit via `conda deactivate`.
 
 ### Additional Software:
 In addition to the Anaconda environment detailed above, the following packages may also prove useful; some of which are required for final steps in this framework.
@@ -50,7 +50,7 @@ If this code is useful in your work, please cite:
 ### License:
 Copyright (C) 2018-2021 Evan Seitz
 
-CU/UWM *ManifoldEM DMSA team* (alphabetically ordered):
+CU/UWM *ManifoldEM ESPER team* (alphabetically ordered):
 - Acosta-Reyes, Francisco; Columbia University Medical Center
 - Frank, Joachim; Columbia University / Columbia University Medical Center
 - Maji, Suvrajit; Columbia University Medical Center

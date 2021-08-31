@@ -225,8 +225,8 @@ for CM_i in states_list:
             
             if groundTruth is True:
                 intersect_GT = list(set(CM1_idx[CM_i-1]) & set(CM2_idx[CM_j-1]))                            
-                intersect_DMSA_GT = list(set(intersect) & set(intersect_GT))                
-                occmap2D_accuracy[CM_j-1, CM_i-1] += len(intersect_DMSA_GT)
+                intersect_ESPER_GT = list(set(intersect) & set(intersect_GT))                
+                occmap2D_accuracy[CM_j-1, CM_i-1] += len(intersect_ESPER_GT)
 
             if R2_skip is True: #only affects occupancies while preserving all images
                 if cm_i_R2 < R2_thresh or cm_j_R2 < R2_thresh:
