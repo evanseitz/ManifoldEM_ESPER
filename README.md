@@ -1,5 +1,5 @@
 # README
-## ManifoldEM: ESPER Framework
+## ManifoldEM: ESPER Repository
 
 This repository contains the software implementation for our [paper](https://www.biorxiv.org/content/10.1101/2021.06.18.449029v1) **Recovery of conformational continuum from single-particle cryo-EM data: Optimization of ManifoldEM informed by ground-truth studies** (Seitz, Schwander, Acosta-Reyes, Maji, Frank). It contains tools to apply the discussed method ESPER (Embedded Subspace Partitioning and Eigenfunction Realignment) to quasi-continuum models. This work was developed in the Frank research group at Columbia University in collaboration with Peter Schwander at the University of Wisconsin-Milwaukee (UWM).
 
