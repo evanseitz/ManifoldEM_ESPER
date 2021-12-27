@@ -12,9 +12,9 @@ Please note that additional alterations to this code will be required to make th
 ### Environment:
 First, install [Anaconda](https://docs.anaconda.com/anaconda/install), and with Anaconda sourced, create a new Anaconda environment:
 
-`condo create -n ESPER python=3`
+`conda create -n ESPER python=3`
 
-Next, activate this environment via `condo activate ESPER`, and install the following packages:
+Next, activate this environment via `conda activate ESPER`, and install the following packages:
 
 - `pip install numpy`
 - `pip install matplotlib`
